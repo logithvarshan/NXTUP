@@ -1,0 +1,82 @@
+{% extends "admin/base.html" %}
+{% block title %}Events — {{ site.site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Experiences &amp; Trips</h1>
+    <p class="admin-page-sub">{{ events|length }} total event{{ 's' if events|length != 1 }}</p>
+  </div>
+  <a href="{{ url_for('admin.event_new') }}" class="btn btn-primary btn-sm">+ Create Event</a>
+</div>
+
+{% if events %}
+<div class="admin-table-wrap" style="overflow-x:auto;">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Category</th>
+        <th>City</th>
+        <th>Start</th>
+        <th>Price</th>
+        <th>Capacity</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ev in events %}
+      <tr>
+        <td>
+          <strong>{{ ev.title }}</strong>
+          <div style="font-size:0.75rem;color:var(--text-muted);">
+            /{{ ev.slug }}
+            {% if ev.is_trip %} · <span style="color:var(--cat-trip);">Trip</span>{% endif %}
+            {% if ev.is_mystery %} · <span style="color:var(--cat-mystery);">Mystery</span>{% endif %}
+          </div>
+        </td>
+        <td><span class="badge badge-{{ ev.category }}">{{ ev.category | category_icon }} {{ ev.category | category_label }}</span></td>
+        <td>{{ ev.city }}</td>
+        <td style="font-size:0.82rem;">{{ ev.start_datetime | datetime_display }}</td>
+        <td>{{ ev.price | rupees }}</td>
+        <td>{{ ev.available_places }} / {{ ev.capacity }} left</td>
+        <td>
+          {% if ev.published %}
+            <span class="badge badge-confirmed">Published</span>
+          {% else %}
+            <span class="badge badge-waitlisted">Draft</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            {% if ev.published %}
+              <a href="{{ url_for('public.experience_detail', slug=ev.slug) }}" target="_blank" class="action-btn action-btn-edit">View</a>
+            {% endif %}
+            <a href="{{ url_for('admin.event_edit', event_id=ev.id) }}" class="action-btn action-btn-edit">Edit</a>
+            <form method="POST" action="{{ url_for('admin.event_toggle_publish', event_id=ev.id) }}" style="margin:0;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="action-btn action-btn-publish">
+                {{ 'Unpublish' if ev.published else 'Publish' }}
+              </button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.event_delete', event_id=ev.id) }}" style="margin:0;"
+                  onsubmit="return confirm('Delete this event? This cannot be undone.');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="action-btn action-btn-delete">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state__icon">🗓️</div>
+  <div class="empty-state__title">No events created yet</div>
+  <a href="{{ url_for('admin.event_new') }}" class="btn btn-primary mt-lg">+ Create First Event</a>
+</div>
+{% endif %}
+{% endblock %}

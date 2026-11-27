@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found — {{ site.site_name }}{% endblock %}
+
+{% block content %}
+<div style="min-height:70dvh;display:flex;align-items:center;justify-content:center;padding:var(--space-2xl);">
+  <div style="max-width:480px;text-align:center;">
+    <div style="font-family:var(--font-heading);font-size:5rem;font-weight:800;color:var(--accent);line-height:1;">404</div>
+    <h1 class="display-md" style="margin:var(--space-md) 0;">Wrong turn, macha!</h1>
+    <p style="color:var(--text-secondary);margin-bottom:var(--space-xl);line-height:1.7;">
+      The page you're looking for doesn't exist or may have moved. Let's get you back to real plans.
+    </p>
+    <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap;">
+      <a href="{{ url_for('public.index') }}" class="btn btn-primary">Go Home →</a>
+      <a href="{{ url_for('public.explore') }}" class="btn btn-secondary">Explore Plans</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

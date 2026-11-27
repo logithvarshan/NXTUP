@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+{% block title %}Bookings — {{ site.site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Bookings</h1>
+    <p class="admin-page-sub">{{ bookings|length }} booking{{ 's' if bookings|length != 1 }} found</p>
+  </div>
+  <a href="{{ url_for('admin.bookings_export') }}" class="btn btn-secondary btn-sm">⬇ Export CSV</a>
+</div>
+
+<form method="GET" action="{{ url_for('admin.bookings') }}" class="admin-filter-bar">
+  <input class="form-input" type="search" name="q" placeholder="Search ref, name, email..." value="{{ search }}">
+  <select class="form-select" name="status">
+    <option value="">All Statuses</option>
+    {% for s in ['pending', 'confirmed', 'waitlisted', 'cancelled', 'attended', 'no_show'] %}
+      <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s | replace('_', ' ') | title }}</option>
+    {% endfor %}
+  </select>
+  <select class="form-select" name="event_id">
+    <option value="">All Events</option>
+    {% for ev in events %}
+      <option value="{{ ev.id }}" {% if event_filter == ev.id|string %}selected{% endif %}>{{ ev.title }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+  <a href="{{ url_for('admin.bookings') }}" class="btn btn-secondary btn-sm">Reset</a>
+</form>
+
+{% if bookings %}
+<div class="admin-table-wrap" style="overflow-x:auto;">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Reference</th>
+        <th>Participant</th>
+        <th>Event</th>
+        <th>Places</th>
+        <th>Status</th>
+        <th>Payment</th>
+        <th>Update</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in bookings %}
+      <tr>
+        <td>
+          <strong style="color:var(--accent);">{{ b.reference }}</strong>
+          <div style="font-size:0.72rem;color:var(--text-muted);">{{ b.created_at | date_display }}</div>
+        </td>
+        <td>
+          <div><strong>{{ b.name }}</strong></div>
+          <div style="font-size:0.78rem;color:var(--text-secondary);">{{ b.email }}</div>
+          {% if b.phone %}<div style="font-size:0.75rem;color:var(--text-muted);">{{ b.phone }}</div>{% endif %}
+          {% if b.notes %}<div style="font-size:0.75rem;color:var(--info);margin-top:4px;">Note: {{ b.notes }}</div>{% endif %}
+        </td>
+        <td>{{ b.event.title if b.event else '—' }}</td>
+        <td>{{ b.places }}</td>
+        <td><span class="badge badge-{{ b.status }}">{{ b.status_label }}</span></td>
+        <td><span style="font-size:0.8rem;color:var(--text-secondary);">{{ b.payment_status | replace('_', ' ') | title }}</span></td>
+        <td>
+          <form method="POST" action="{{ url_for('admin.booking_update_status', booking_id=b.id) }}"
+                style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="status" class="form-select" style="padding:4px 8px;font-size:0.78rem;width:auto;">
+              {% for s in ['pending', 'confirmed', 'waitlisted', 'cancelled', 'attended', 'no_show'] %}
+                <option value="{{ s }}" {% if b.status == s %}selected{% endif %}>{{ s | replace('_', ' ') | title }}</option>
+              {% endfor %}
+            </select>
+            <select name="payment_status" class="form-select" style="padding:4px 8px;font-size:0.78rem;width:auto;">
+              {% for p in ['not_applicable', 'pending', 'paid', 'refunded'] %}
+                <option value="{{ p }}" {% if b.payment_status == p %}selected{% endif %}>{{ p | replace('_', ' ') | title }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="action-btn action-btn-confirm">Save</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state__icon">🎫</div>
+  <div class="empty-state__title">No bookings match your filters</div>
+</div>
+{% endif %}
+{% endblock %}

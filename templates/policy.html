@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if policy_type == 'guidelines' %}Community Guidelines{% elif policy_type == 'privacy' %}Privacy Policy{% else %}Cancellation Policy{% endif %} — {{ site.site_name }}
+{% endblock %}
+
+{% block content %}
+<div style="padding:var(--space-2xl) 0 var(--space-4xl);">
+  <div class="container" style="max-width:780px;margin:0 auto;">
+
+    <a href="{{ url_for('public.index') }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-size:0.85rem;margin-bottom:var(--space-lg);">
+      ← Back to Home
+    </a>
+
+    {% if policy_type == 'guidelines' %}
+      <div class="section-heading">
+        <div class="section-heading__eyebrow">Safety &amp; Conduct</div>
+        <h1 class="section-heading__title">COMMUNITY GUIDELINES.</h1>
+        <p class="section-heading__sub">Every {{ site.site_name }} experience is built on respect, safety, and zero judgement.</p>
+      </div>
+
+      <div class="card" style="padding:var(--space-xl);display:flex;flex-direction:column;gap:var(--space-lg);">
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">1. 18+ Adults Only</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">All {{ site.site_name }} meetups, experiences, and trips are strictly for participants aged 18 and above.</p>
+        </div>
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">2. Respect Boundaries &amp; Consent</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">No harassment, unwanted advances, intrusive questioning, or pressure to share personal contact info or social handles.</p>
+        </div>
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">3. Be Present</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">Show up on time, stay engaged with the group, and ask before taking photos or videos of other participants.</p>
+        </div>
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">4. Zero Tolerance for Abuse</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">Any discriminatory, abusive, or unsafe behaviour results in immediate removal from the experience and permanent ban from the platform.</p>
+        </div>
+        <div class="alert alert-info" style="font-size:0.88rem;">
+          Need to report an issue? <a href="{{ url_for('public.contact') }}?category=safety" style="text-decoration:underline;font-weight:600;">Report safely here</a> or email <a href="mailto:{{ site.contact_email }}" style="text-decoration:underline;">{{ site.contact_email }}</a>.
+        </div>
+      </div>
+
+    {% elif policy_type == 'privacy' %}
+      <div class="section-heading">
+        <div class="section-heading__eyebrow">Data &amp; Trust</div>
+        <h1 class="section-heading__title">PRIVACY POLICY.</h1>
+        <p class="section-heading__sub">We collect only what is needed to coordinate your experience safely.</p>
+      </div>
+
+      <div class="card" style="padding:var(--space-xl);display:flex;flex-direction:column;gap:var(--space-lg);">
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">1. Information We Collect</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">When you register for an experience, we collect your name, email address, optional phone number, and optional accessibility/event notes.</p>
+        </div>
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">2. How We Use Your Data</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">Your contact details are used solely to confirm bookings, share meeting point details, and coordinate safety during trips or meetups. We never sell or rent your data.</p>
+        </div>
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">3. Data Deletion</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">You can request deletion of your booking notes or contact data anytime by emailing <a href="mailto:{{ site.contact_email }}" style="color:var(--accent);">{{ site.contact_email }}</a>.</p>
+        </div>
+      </div>
+
+    {% else %}
+      <div class="section-heading">
+        <div class="section-heading__eyebrow">Bookings &amp; Refunds</div>
+        <h1 class="section-heading__title">CANCELLATION POLICY.</h1>
+        <p class="section-heading__sub">Clear, fair rules so hosts can plan small groups reliably.</p>
+      </div>
+
+      <div class="card" style="padding:var(--space-xl);display:flex;flex-direction:column;gap:var(--space-lg);">
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">1. Standard Meetups &amp; Experiences</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">Cancel at least 24–48 hours before the start time (exact window shown on each experience page) for a full refund or free reschedule.</p>
+        </div>
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">2. Day Trips &amp; Travel Experiences</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">Trips involve shared transport and bookings. Unless specified otherwise on the trip page: full refund 5+ days before departure, 50% refund 3–4 days before, no refund within 48 hours.</p>
+        </div>
+        <div>
+          <h2 style="font-size:1.05rem;margin-bottom:6px;color:var(--accent);">3. If {{ site.site_name }} Cancels</h2>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">If an event is cancelled due to weather, minimum group size, or host unavailability, you receive a 100% refund or priority transfer.</p>
+        </div>
+        <div class="alert alert-info" style="font-size:0.88rem;">
+          To cancel a booking, check <a href="{{ url_for('public.my_plans') }}" style="text-decoration:underline;font-weight:600;">My Plans</a> and reach out with your reference number.
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

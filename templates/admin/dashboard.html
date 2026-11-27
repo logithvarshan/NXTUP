@@ -1,0 +1,133 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard — {{ site.site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Welcome back, {{ admin_name }}</h1>
+    <p class="admin-page-sub">Overview of experiences, bookings, community stories, and customization.</p>
+  </div>
+  <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+    <a href="{{ url_for('admin.event_new') }}" class="btn btn-primary btn-sm">+ New Event</a>
+    <a href="{{ url_for('admin.customize') }}" class="btn btn-secondary btn-sm">🎨 Customize Site</a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card stat-card--accent">
+    <div class="stat-card__value">{{ upcoming_events }}</div>
+    <div class="stat-card__label">Upcoming Live</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__value">{{ total_events }}</div>
+    <div class="stat-card__label">Published Events</div>
+  </div>
+  <div class="stat-card stat-card--info">
+    <div class="stat-card__value">{{ total_bookings }}</div>
+    <div class="stat-card__label">Total Bookings</div>
+  </div>
+  <div class="stat-card stat-card--success">
+    <div class="stat-card__value">{{ confirmed }}</div>
+    <div class="stat-card__label">Confirmed</div>
+  </div>
+  <div class="stat-card stat-card--warning">
+    <div class="stat-card__value">{{ pending }}</div>
+    <div class="stat-card__label">Pending</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__value">{{ pending_reviews }}</div>
+    <div class="stat-card__label">Reviews to Moderate</div>
+  </div>
+  <div class="stat-card stat-card--error">
+    <div class="stat-card__value">{{ new_messages }}</div>
+    <div class="stat-card__label">New Messages</div>
+  </div>
+</div>
+
+<!-- Recent Bookings -->
+<div class="admin-form-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm);">
+    <h2 class="admin-form-card__title" style="margin-bottom:0;">Recent Bookings</h2>
+    <div style="display:flex;gap:var(--space-sm);">
+      <a href="{{ url_for('admin.bookings_export') }}" class="btn btn-secondary btn-sm">Export CSV</a>
+      <a href="{{ url_for('admin.bookings') }}" class="btn btn-ghost btn-sm">View All →</a>
+    </div>
+  </div>
+
+  {% if recent_bookings %}
+    <div class="admin-table-wrap" style="overflow-x:auto;">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Ref</th>
+            <th>Participant</th>
+            <th>Event</th>
+            <th>Places</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in recent_bookings %}
+          <tr>
+            <td><strong style="color:var(--accent);">{{ b.reference }}</strong></td>
+            <td>
+              <div>{{ b.name }}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.email }}</div>
+            </td>
+            <td>{{ b.event.title if b.event else '—' }}</td>
+            <td>{{ b.places }}</td>
+            <td><span class="badge badge-{{ b.status }}">{{ b.status_label }}</span></td>
+            <td style="color:var(--text-muted);font-size:0.8rem;">{{ b.created_at | date_display }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p style="color:var(--text-muted);font-size:0.9rem;">No bookings yet.</p>
+  {% endif %}
+</div>
+
+<!-- Upcoming Events -->
+<div class="admin-form-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm);">
+    <h2 class="admin-form-card__title" style="margin-bottom:0;">Next Upcoming Experiences</h2>
+    <a href="{{ url_for('admin.events') }}" class="btn btn-ghost btn-sm">Manage Events →</a>
+  </div>
+
+  {% if upcoming %}
+    <div class="admin-table-wrap" style="overflow-x:auto;">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>City</th>
+            <th>Date</th>
+            <th>Spots Left</th>
+            <th>Price</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ev in upcoming %}
+          <tr>
+            <td><strong>{{ ev.title }}</strong></td>
+            <td>{{ ev.city }}</td>
+            <td>{{ ev.start_datetime | datetime_display }}</td>
+            <td>{{ ev.available_places }} / {{ ev.capacity }}</td>
+            <td>{{ ev.price | rupees }}</td>
+            <td>
+              <a href="{{ url_for('admin.event_edit', event_id=ev.id) }}" class="action-btn action-btn-edit">Edit</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p style="color:var(--text-muted);font-size:0.9rem;">No upcoming published events.</p>
+  {% endif %}
+</div>
+{% endblock %}

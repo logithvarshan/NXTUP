@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Community Stories & Reviews — {{ site.site_name }}{% endblock %}
+{% block meta_description %}Real stories from people who attended {{ site.site_name }} experiences. Share your own story.{% endblock %}
+
+{% block content %}
+<div style="padding-top:var(--space-2xl);padding-bottom:var(--space-4xl);">
+  <div class="container" style="max-width:900px;margin:0 auto;">
+
+    <!-- Header -->
+    <div class="section-heading scroll-fade-in" style="margin-bottom:var(--space-2xl);">
+      <div class="section-heading__eyebrow">Community</div>
+      <h1 class="section-heading__title">STORIES FROM THE<br>OTHER SIDE OF STRANGERS.</h1>
+      <p class="section-heading__sub">Real experiences. Real people. No embellishment.</p>
+    </div>
+
+    <!-- Success message -->
+    {% if success %}
+    <div class="alert alert-success scroll-fade-in" style="margin-bottom:var(--space-xl);">
+      <strong>✓ Thanks for sharing!</strong><br>
+      Your story has been submitted and will appear here once reviewed.
+    </div>
+    {% endif %}
+
+    <!-- Error messages -->
+    {% if errors %}
+    <div style="margin-bottom:var(--space-lg);">
+      {% for error in errors %}
+        <div class="alert alert-error" style="margin-bottom:var(--space-sm);">{{ error }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Stories grid -->
+    {% if approved_reviews %}
+      <div class="grid stories-list-grid scroll-fade-in" style="margin-bottom:var(--space-3xl);">
+        {% for review in approved_reviews %}
+        <div class="card" style="padding:var(--space-xl);">
+          {% if review.is_sample %}
+            <div class="sample-banner">⚠ Sample story — real stories will replace this</div>
+          {% endif %}
+          <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);">
+            <div style="width:48px;height:48px;background:var(--accent-dim);border:1.5px solid {{ site.accent_border }};
+                        border-radius:50%;display:flex;align-items:center;justify-content:center;
+                        font-family:var(--font-heading);font-weight:800;color:var(--accent);font-size:1.2rem;flex-shrink:0;">
+              {{ review.reviewer_initial or review.reviewer_name[0] }}
+            </div>
+            <div style="flex:1;">
+              <div style="font-weight:700;font-size:0.95rem;">{{ review.reviewer_name }}</div>
+              {% if review.experience_type %}
+                <div style="font-size:0.75rem;color:var(--text-muted);">{{ review.experience_type }}</div>
+              {% endif %}
+            </div>
+            {% if review.rating %}
+              <div class="stars" style="font-size:1rem;">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div>
+            {% endif %}
+          </div>
+          <p style="color:var(--text-secondary);font-size:0.95rem;line-height:1.8;font-style:italic;">
+            "{{ review.story }}"
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state scroll-fade-in" style="margin-bottom:var(--space-3xl);">
+        <div class="empty-state__icon">📖</div>
+        <div class="empty-state__title">No stories yet</div>
+        <p>Be the first to share your experience after attending an event.</p>
+      </div>
+    {% endif %}
+
+    <!-- Submit story form -->
+    <div class="scroll-fade-in">
+      <div style="border-top:1px solid var(--border);padding-top:var(--space-2xl);">
+        <h2 style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;
+                   letter-spacing:-0.02em;margin-bottom:var(--space-sm);">Share Your Story</h2>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:var(--space-xl);">
+          Attended an {{ site.site_name }} experience? Tell us about it. Stories are reviewed before appearing here.
+        </p>
+
+        <form method="POST" action="{{ url_for('public.reviews') }}"
+              class="card" style="padding:var(--space-xl);" data-validate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+            <div class="form-group">
+              <label class="form-label" for="reviewer-name">Your Name *</label>
+              <input class="form-input" type="text" id="reviewer-name" name="name" required
+                     placeholder="e.g. Priya M." minlength="2" maxlength="150"
+                     value="{{ form_data.name if form_data else '' }}">
+              <span class="form-hint">First name + last initial is fine</span>
+              <span class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="experience-type">Which experience did you attend?</label>
+              <input class="form-input" type="text" id="experience-type" name="experience_type"
+                     maxlength="100"
+                     placeholder="e.g. Sunset Strangers, Mystery Meetup"
+                     value="{{ form_data.experience_type if form_data else '' }}">
+            </div>
+
+            <!-- Star rating -->
+            <div class="form-group">
+              <label class="form-label">Rating (optional)</label>
+              <div id="star-rating" style="display:flex;gap:8px;">
+                {% for n in range(1,6) %}
+                <button type="button" class="star-btn" aria-label="{{ n }} star{{ 's' if n > 1 }}"
+                        style="font-size:1.6rem;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0;">★</button>
+                {% endfor %}
+              </div>
+              <input type="hidden" id="rating-input" name="rating" value="{{ form_data.rating if form_data else '' }}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="review-story">Your Story *</label>
+              <textarea class="form-textarea" id="review-story" name="story" required rows="5"
+                        placeholder="What happened? How did it feel? What surprised you?"
+                        minlength="20" maxlength="1000">{{ form_data.story if form_data else '' }}</textarea>
+              <span class="form-hint">Minimum 20 characters. Keep it honest — don't embellish.</span>
+              <span class="form-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="story-submit-btn">SUBMIT MY STORY →</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

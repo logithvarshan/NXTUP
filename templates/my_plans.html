@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}My Plans — Booking Lookup | {{ site.site_name }}{% endblock %}
+
+{% block content %}
+<div style="padding:var(--space-2xl) 0 var(--space-4xl);">
+  <div class="container" style="max-width:600px;margin:0 auto;">
+
+    <div class="section-heading scroll-fade-in">
+      <div class="section-heading__eyebrow">Your Bookings</div>
+      <h1 class="section-heading__title">MY PLANS.</h1>
+      <p class="section-heading__sub">Enter your booking reference and email to look up your registration.</p>
+    </div>
+
+    <!-- Lookup form -->
+    <form method="POST" action="{{ url_for('public.my_plans') }}"
+          class="card scroll-fade-in" style="padding:var(--space-xl);margin-bottom:var(--space-xl);" data-validate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+        <div class="form-group">
+          <label class="form-label" for="lookup-ref">Booking Reference *</label>
+          <input class="form-input" type="text" id="lookup-ref" name="reference" required
+                 placeholder="e.g. NXT-A1B2C3D4" style="text-transform:uppercase;letter-spacing:0.05em;"
+                 value="{{ request.form.reference if request.form else '' }}">
+          <span class="form-hint">Found in your booking confirmation</span>
+          <span class="form-error"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="lookup-email">Email Address *</label>
+          <input class="form-input" type="email" id="lookup-email" name="email" required
+                 placeholder="The email you booked with"
+                 value="{{ request.form.email if request.form else '' }}">
+          <span class="form-error"></span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="lookup-btn">FIND MY BOOKING →</button>
+      </div>
+    </form>
+
+    <!-- Error -->
+    {% if searched and error %}
+    <div class="alert alert-error scroll-fade-in" style="margin-bottom:var(--space-lg);">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Results -->
+    {% if bookings %}
+      {% for booking in bookings %}
+      <div class="card scroll-fade-in" style="padding:var(--space-xl);margin-bottom:var(--space-lg);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-sm);">
+          <div>
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Booking Reference</div>
+            <div style="font-family:var(--font-heading);font-size:1.1rem;font-weight:800;color:var(--accent);">{{ booking.reference }}</div>
+          </div>
+          <span class="badge badge-{{ booking.status }}">{{ booking.status_label }}</span>
+        </div>
+
+        <div class="grid key-details-grid" style="margin-bottom:var(--space-lg);">
+          <div>
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:3px;">Event</div>
+            <div style="font-weight:600;font-size:0.9rem;">{{ booking.event.title }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:3px;">Date</div>
+            <div style="font-weight:600;font-size:0.9rem;">{{ booking.event.start_datetime | datetime_display }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:3px;">Location</div>
+            <div style="font-weight:600;font-size:0.9rem;">{{ booking.event.location_name or booking.event.city }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:3px;">Places</div>
+            <div style="font-weight:600;font-size:0.9rem;">{{ booking.places }} place{{ 's' if booking.places > 1 }}</div>
+          </div>
+        </div>
+
+        {% if booking.status in ['pending', 'confirmed'] %}
+          <div class="alert alert-info" style="font-size:0.85rem;margin-bottom:var(--space-md);">
+            To cancel or update your booking, contact us at
+            <a href="mailto:{{ site.contact_email }}" style="color:var(--info);text-decoration:underline;">{{ site.contact_email }}</a>
+            with your reference number.
+          </div>
+        {% endif %}
+
+        <a href="{{ url_for('public.experience_detail', slug=booking.event.slug) }}"
+           class="btn btn-secondary btn-sm">View Experience →</a>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if searched and not bookings and not error %}
+      <div class="empty-state scroll-fade-in">
+        <div class="empty-state__icon">🔍</div>
+        <div class="empty-state__title">Nothing found</div>
+        <p>Double-check your booking reference and email address.</p>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

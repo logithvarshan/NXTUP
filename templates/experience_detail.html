@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} — {{ site.site_name }} {{ event.city }}{% endblock %}
+{% block meta_description %}{{ event.short_description }} | {{ event.start_datetime | date_display }} in {{ event.city }}. {{ event.price | rupees }} per person.{% endblock %}
+
+{% block content %}
+<div style="padding-top:var(--space-xl);padding-bottom:var(--space-4xl);">
+  <div class="container" style="max-width:860px;margin:0 auto;">
+
+    <!-- Back link -->
+    <a href="{{ url_for('public.trips') if event.is_trip else url_for('public.explore') }}"
+       style="display:inline-flex;align-items:center;gap:6px;
+       color:var(--text-muted);font-size:0.85rem;margin-bottom:var(--space-lg);transition:color var(--transition);"
+       onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">
+      ← Back to {{ 'Trips' if event.is_trip else 'Explore' }}
+    </a>
+
+    <!-- Hero image -->
+    {% if event.image_filename %}
+      <img src="{{ url_for('static', filename='images/' + event.image_filename) }}"
+           alt="{{ event.title }}"
+           style="width:100%;border-radius:var(--radius-xl);aspect-ratio:16/9;object-fit:cover;margin-bottom:var(--space-xl);"
+           loading="eager">
+    {% endif %}
+
+    <!-- Title & meta row -->
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-md);margin-bottom:var(--space-xl);">
+      <div style="flex:1;min-width:260px;">
+        <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-md);">
+          {% set cat_info = category_map.get(event.category) %}
+          <span class="badge badge-{{ event.category }}"
+                {% if cat_info %}style="background:{{ cat_info.color_dim }};color:{{ cat_info.color }};"{% endif %}>
+            {{ event.category | category_icon }} {{ event.category | category_label }}
+          </span>
+          {% if event.is_mystery %}
+            <span class="badge badge-mystery">🎭 Mystery</span>
+          {% endif %}
+          {% if event.is_trip %}
+            <span class="badge badge-trip">🚌 Trip</span>
+          {% endif %}
+        </div>
+        <h1 style="font-family:var(--font-heading);font-size:clamp(1.6rem,4vw,2.2rem);font-weight:800;
+                   letter-spacing:-0.03em;line-height:1.1;margin-bottom:var(--space-sm);">
+          {{ event.title }}
+        </h1>
+        <p style="color:var(--text-secondary);font-size:0.95rem;line-height:1.7;">
+          {{ event.short_description }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Key details grid -->
+    <div class="card" style="padding:var(--space-xl);margin-bottom:var(--space-xl);">
+      <div class="grid key-details-grid">
+        {% set details = [
+          ('📅', 'Date & Time', event.start_datetime | datetime_display),
+          ('⏱', 'Duration', event.duration_display),
+          ('📍', 'Location', event.location_name or event.city),
+          ('💰', 'Price', (event.price | rupees) + ' per person'),
+          ('👥', 'Group Size', 'Up to ' + event.capacity|string + ' people'),
+          ('🏙️', 'City', event.city),
+        ] %}
+        {% if event.min_age %}
+          {% set details = details + [('🔞', 'Age', event.min_age|string + '+ only')] %}
+        {% endif %}
+        {% if event.physical_level %}
+          {% set details = details + [('🏃', 'Activity Level', event.physical_level|title)] %}
+        {% endif %}
+        {% for icon, label, value in details %}
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+                      color:var(--text-muted);margin-bottom:4px;">{{ icon }} {{ label }}</div>
+          <div style="font-weight:600;font-size:0.95rem;">{{ value }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Availability bar -->
+      <div style="margin-top:var(--space-lg);padding-top:var(--space-lg);border-top:1px solid var(--border);">
+        {% set avail = event.available_places %}
+        {% if is_past %}
+          <div style="display:flex;align-items:center;gap:var(--space-sm);">
+            <span class="badge badge-sold-out">Past Event</span>
+            <span style="font-size:0.85rem;color:var(--text-muted);">This experience has already taken place</span>
+          </div>
+        {% elif avail == 0 %}
+          <div style="display:flex;align-items:center;gap:var(--space-sm);">
+            <span class="badge badge-sold-out">Sold Out</span>
+            <span style="font-size:0.85rem;color:var(--text-muted);">No places remaining</span>
+          </div>
+        {% else %}
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:var(--space-sm);">
+            {{ avail }} of {{ event.capacity }} places remaining
+          </div>
+          <div class="progress">
+            <div class="progress__fill" style="width:{{ [(event.capacity - avail) / event.capacity * 100, 100] | min | int }}%"></div>
+          </div>
+          <div style="margin-top:6px;font-size:0.8rem;
+            color:{{ 'var(--error)' if avail <= 3 else 'var(--warning)' if avail <= 8 else 'var(--success)' }};">
+            {{ event.availability_label }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Description -->
+    <section aria-labelledby="about-heading" style="margin-bottom:var(--space-xl);">
+      <h2 id="about-heading" style="font-family:var(--font-heading);font-size:1.1rem;font-weight:800;
+          letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);
+          margin-bottom:var(--space-md);">About This Experience</h2>
+      <div style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;white-space:pre-line;">{{ event.description }}</div>
+    </section>
+
+    <!-- Location -->
+    {% if event.location_details %}
+    <section style="margin-bottom:var(--space-xl);">
+      <h2 style="font-family:var(--font-heading);font-size:1.1rem;font-weight:800;
+          letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);
+          margin-bottom:var(--space-md);">📍 Meeting Point</h2>
+      <div class="card" style="padding:var(--space-lg);">
+        <strong style="display:block;margin-bottom:6px;">{{ event.location_name or event.city }}</strong>
+        <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">{{ event.location_details }}</p>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Trip logistics -->
+    {% if event.transport_info or event.meals_info %}
+    <section style="margin-bottom:var(--space-xl);">
+      <h2 style="font-family:var(--font-heading);font-size:1.1rem;font-weight:800;
+          letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);
+          margin-bottom:var(--space-md);">🚌 Trip Logistics</h2>
+      <div class="card" style="padding:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-sm);">
+        {% if event.transport_info %}
+          <p style="color:var(--text-secondary);font-size:0.9rem;"><strong>Transport:</strong> {{ event.transport_info }}</p>
+        {% endif %}
+        {% if event.meals_info %}
+          <p style="color:var(--text-secondary);font-size:0.9rem;"><strong>Meals:</strong> {{ event.meals_info }}</p>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Activity plan -->
+    {% if event.activity_plan %}
+    <section style="margin-bottom:var(--space-xl);">
+      <h2 style="font-family:var(--font-heading);font-size:1.1rem;font-weight:800;
+          letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);
+          margin-bottom:var(--space-md);">What Happens</h2>
+      <div style="color:var(--text-secondary);font-size:0.9rem;line-height:1.8;white-space:pre-line;">{{ event.activity_plan }}</div>
+    </section>
+    {% endif %}
+
+    <!-- Inclusions -->
+    {% if event.what_included or event.what_not_included %}
+    <div class="grid inclusions-grid" style="gap:var(--space-md);margin-bottom:var(--space-xl);">
+      {% if event.what_included %}
+      <div class="card" style="padding:var(--space-lg);">
+        <h3 style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+                   color:var(--success);margin-bottom:var(--space-md);">✓ Included</h3>
+        {% for item in event.what_included.split('·') %}
+          {% if item.strip() %}
+          <div style="display:flex;gap:8px;font-size:0.85rem;color:var(--text-secondary);margin-bottom:6px;">
+            <span style="color:var(--success);flex-shrink:0;">✓</span> {{ item.strip() }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if event.what_not_included %}
+      <div class="card" style="padding:var(--space-lg);">
+        <h3 style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+                   color:var(--error);margin-bottom:var(--space-md);">✗ Not Included</h3>
+        {% for item in event.what_not_included.split('·') %}
+          {% if item.strip() %}
+          <div style="display:flex;gap:8px;font-size:0.85rem;color:var(--text-secondary);margin-bottom:6px;">
+            <span style="color:var(--error);flex-shrink:0;">✗</span> {{ item.strip() }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- What to bring -->
+    {% if event.what_to_bring %}
+    <section style="margin-bottom:var(--space-xl);">
+      <h2 style="font-family:var(--font-heading);font-size:1.1rem;font-weight:800;
+          letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);
+          margin-bottom:var(--space-md);">🎒 What to Bring</h2>
+      <div class="card" style="padding:var(--space-lg);">
+        {% for item in event.what_to_bring.split('·') %}
+          {% if item.strip() %}
+          <div style="display:flex;gap:8px;font-size:0.9rem;color:var(--text-secondary);margin-bottom:8px;">
+            <span style="color:var(--accent);flex-shrink:0;">→</span> {{ item.strip() }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Safety & Cancellation -->
+    <div class="grid" style="grid-template-columns:1fr;gap:var(--space-md);margin-bottom:var(--space-xl);">
+      {% if event.safety_info %}
+      <div class="alert alert-info">
+        <strong>🛡️ Safety</strong><br>
+        <span style="font-size:0.9rem;">{{ event.safety_info }}</span>
+      </div>
+      {% endif %}
+      {% if event.cancellation_terms %}
+      <div class="alert alert-warning">
+        <strong>↩ Cancellation</strong><br>
+        <span style="font-size:0.9rem;">{{ event.cancellation_terms }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Reviews -->
+    {% if reviews %}
+    <section style="margin-bottom:var(--space-xl);">
+      <h2 style="font-family:var(--font-heading);font-size:1.1rem;font-weight:800;
+          letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);
+          margin-bottom:var(--space-lg);">What People Said</h2>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+        {% for review in reviews %}
+        <div class="card" style="padding:var(--space-lg);">
+          {% if review.is_sample %}
+            <div class="sample-banner">⚠ Sample review</div>
+          {% endif %}
+          <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);">
+            <div style="width:36px;height:36px;background:var(--accent-dim);border-radius:50%;
+                        display:flex;align-items:center;justify-content:center;
+                        font-family:var(--font-heading);font-weight:700;color:var(--accent);">
+              {{ review.reviewer_initial or review.reviewer_name[0] }}
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;">{{ review.reviewer_name }}</div>
+            </div>
+            {% if review.rating %}
+              <div class="stars" style="margin-left:auto;font-size:0.8rem;">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div>
+            {% endif %}
+          </div>
+          <p style="color:var(--text-secondary);font-size:0.875rem;line-height:1.7;font-style:italic;">
+            "{{ review.story }}"
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Booking form -->
+    <section id="booking-form-section" aria-labelledby="book-heading">
+      <h2 id="book-heading" style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;
+          letter-spacing:-0.02em;margin-bottom:var(--space-lg);">Reserve Your Place</h2>
+
+      <div class="alert alert-info" style="margin-bottom:var(--space-lg);font-size:0.85rem;">
+        <strong>ℹ️ Registration-only</strong> — Payment will be collected separately before the event. You will receive confirmation details by email.
+      </div>
+
+      {% if errors %}
+        {% for error in errors %}
+          <div class="alert alert-error" style="margin-bottom:var(--space-sm);">{{ error }}</div>
+        {% endfor %}
+      {% endif %}
+
+      {% if is_past %}
+        <div class="alert alert-warning">
+          <strong>Registration for this experience has closed.</strong><br>
+          <a href="{{ url_for('public.explore') }}" style="color:var(--warning);text-decoration:underline;">Browse upcoming experiences →</a>
+        </div>
+      {% elif event.is_sold_out %}
+        <div class="alert alert-error">
+          <strong>This experience is sold out.</strong><br>
+          <a href="{{ url_for('public.explore') }}" style="color:var(--error);text-decoration:underline;">Browse other experiences →</a>
+        </div>
+      {% else %}
+        <form method="POST" action="{{ url_for('public.book_experience', slug=event.slug) }}"
+              class="booking-form-card card" style="padding:var(--space-xl);" data-validate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="grid" style="grid-template-columns:1fr;gap:var(--space-md);">
+            <div class="form-group">
+              <label class="form-label" for="book-name">Your Name *</label>
+              <input class="form-input" type="text" id="book-name" name="name" required
+                     minlength="2" maxlength="150"
+                     autocomplete="name" placeholder="e.g. Karthik R."
+                     value="{{ form_data.name if form_data else '' }}">
+              <span class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="book-email">Email Address *</label>
+              <input class="form-input" type="email" id="book-email" name="email" required
+                     maxlength="200"
+                     autocomplete="email" placeholder="you@example.com"
+                     value="{{ form_data.email if form_data else '' }}">
+              <span class="form-hint">Your booking reference will be sent here.</span>
+              <span class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="book-phone">Phone Number (optional)</label>
+              <input class="form-input" type="tel" id="book-phone" name="phone"
+                     maxlength="20"
+                     autocomplete="tel" placeholder="+91 9XXXXXXXXX"
+                     value="{{ form_data.phone if form_data else '' }}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="book-places">Number of Places *</label>
+              {% set max_places = [event.available_places, 5] | min %}
+              <select class="form-select" id="book-places" name="places" required>
+                {% for n in range(1, max_places + 1) %}
+                  <option value="{{ n }}" {% if form_data and form_data.get('places') == n|string %}selected{% endif %}>
+                    {{ n }} place{{ 's' if n > 1 }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="book-notes">Anything we should know? (optional)</label>
+              <textarea class="form-textarea" id="book-notes" name="notes" rows="3"
+                        placeholder="Accessibility needs, questions, etc.">{{ form_data.notes if form_data else '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-full" id="booking-submit-btn">
+              RESERVE MY PLACE →
+            </button>
+          </div>
+        </form>
+      {% endif %}
+    </section>
+
+  </div>
+</div>
+
+<!-- Sticky booking bar (mobile) -->
+{% if not event.is_sold_out and not is_past %}
+<div class="sticky-book-bar mobile-only" id="sticky-book-bar">
+  <div>
+    <div class="sticky-book-bar__price">{{ event.price | rupees }}</div>
+    <div class="sticky-book-bar__label">per person · {{ event.availability_label }}</div>
+  </div>
+  <a href="#booking-form-section" class="btn btn-primary" id="sticky-book-btn">RESERVE →</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const bookSection = document.getElementById('booking-form-section');
+  const stickyBar = document.getElementById('sticky-book-bar');
+  if (!bookSection || !stickyBar) return;
+
+  const obs = new IntersectionObserver(entries => {
+    stickyBar.style.display = entries[0].isIntersecting ? 'none' : '';
+  }, { threshold: 0.2 });
+  obs.observe(bookSection);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,205 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   NXTUP — Responsive Breakpoints
+   Mobile-first: styles here override base for larger screens
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Small phones (up to 380px) ──────────────────────────────────────── */
+@media (max-width: 380px) {
+  .container { padding: 0 var(--space-sm); }
+  .cat-card { padding: var(--space-lg); }
+  .event-card__body { padding: var(--space-md); }
+  .btn-lg { padding: 0.875rem 1.5rem; font-size: 0.9rem; }
+}
+
+/* ── Small-to-medium phones (≥480px) ─────────────────────────────────── */
+@media (min-width: 480px) {
+  .key-details-grid,
+  .trust-links-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+}
+
+/* ── Tablets (≥640px) ────────────────────────────────────────────────── */
+@media (min-width: 640px) {
+  :root { --bottomnav-h: 72px; }
+
+  .container { padding: 0 var(--space-xl); }
+
+  .grid-sm-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .footer__grid {
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+
+  .hero__buttons {
+    flex-direction: row !important;
+    max-width: none !important;
+  }
+
+  .cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .events-grid,
+  .explore-events-grid,
+  .inclusions-grid,
+  .trips-grid,
+  .trips-filter-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .home-events-desktop {
+    display: grid;
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .vibe-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Desktop (≥1024px) ───────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  /* Show top nav, hide bottom nav */
+  .topnav { display: flex; }
+  .bottomnav { display: none; }
+  .footer { margin-bottom: 0; }
+  .sticky-book-bar { display: none !important; }
+
+  body { padding-top: var(--topnav-h); }
+
+  .container { padding: 0 var(--space-2xl); }
+
+  .cat-grid { grid-template-columns: repeat(4, 1fr); }
+
+  .events-grid { grid-template-columns: repeat(3, 1fr); }
+
+  .explore-events-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .stories-list-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .trips-filter-grid {
+    grid-template-columns: 2fr repeat(auto-fit, minmax(140px, 1fr)) auto;
+  }
+
+  .footer__grid {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+  }
+
+  .hero { min-height: calc(100dvh - var(--topnav-h)); }
+
+  .hero__content { max-width: 680px; }
+
+  .explore-layout {
+    grid-template-columns: 280px 1fr;
+    align-items: start;
+  }
+
+  .filter-panel {
+    position: sticky;
+    top: calc(var(--topnav-h) + var(--space-xl));
+    display: block !important;
+  }
+
+  .about-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-4xl);
+  }
+
+  .reviews-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .firsttimer-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-3xl);
+  }
+
+  .trips-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Wide desktop (≥1280px) ──────────────────────────────────────────── */
+@media (min-width: 1280px) {
+  .events-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Mobile-specific body padding ────────────────────────────────────── */
+@media (max-width: 1023px) {
+  body { padding-bottom: var(--bottomnav-h); }
+
+  /* On mobile, hero section doesn't need topnav offset */
+  .hero {
+    min-height: 100dvh;
+    padding-top: var(--space-2xl);
+  }
+
+  /* Make booking form full width on mobile */
+  .booking-form-card {
+    border-radius: var(--radius-md);
+  }
+
+  /* Hide desktop-only elements on mobile */
+  .desktop-only { display: none !important; }
+
+  /* Full-bleed on small screens */
+  .mobile-full-bleed {
+    margin-left: calc(-1 * var(--space-md));
+    margin-right: calc(-1 * var(--space-md));
+    border-radius: 0;
+  }
+}
+
+/* ── Show/hide helpers ───────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .mobile-only { display: none !important; }
+}
+
+/* ── Horizontal scroll for event cards on mobile ─────────────────────── */
+@media (max-width: 639px) {
+  .events-scroll {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: var(--space-md);
+    padding-bottom: var(--space-md);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .events-scroll::-webkit-scrollbar { display: none; }
+
+  .events-scroll .event-card {
+    flex: 0 0 82vw;
+    scroll-snap-align: start;
+  }
+}
+
+/* ── Admin responsive ────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .admin-sidebar { display: none; }
+  .admin-main { padding: var(--space-md); }
+  .admin-table { font-size: 0.8rem; }
+}
+
+/* ── Explore filter on mobile ────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .filter-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+  }
+
+  .filter-panel.collapsed { display: none; }
+}

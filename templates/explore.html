@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Experiences — {{ site.site_name }}{% endblock %}
+{% block meta_description %}Browse and filter upcoming stranger meetups, social experiences, and local activities. Find your next plan.{% endblock %}
+
+{% block content %}
+<div style="padding-top:var(--space-2xl);padding-bottom:var(--space-4xl);">
+  <div class="container">
+
+    <!-- Page header -->
+    <div class="section-heading" style="margin-bottom:var(--space-xl);">
+      <div class="section-heading__eyebrow">
+        {{ events|length }} experience{{ 's' if events|length != 1 }}
+        {% if selected_city %}in {{ selected_city }}{% else %}available{% endif %}
+      </div>
+      <h1 class="section-heading__title">FIND YOUR NEXT PLAN.</h1>
+    </div>
+
+    <!-- Filter toggle (mobile) -->
+    <button id="filter-toggle" class="btn btn-secondary btn-sm mobile-only" style="margin-bottom:var(--space-md);"
+            aria-expanded="false" aria-controls="filter-panel">
+      🔧 <span class="filter-toggle-label">Show Filters</span>
+    </button>
+
+    <div class="explore-layout grid" style="gap:var(--space-xl);">
+
+      <!-- Filter panel -->
+      <aside id="filter-panel" class="filter-panel collapsed" aria-label="Experience filters">
+        <form method="GET" action="{{ url_for('public.explore') }}" id="filter-form">
+          <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+
+            <!-- Search -->
+            <div class="form-group">
+              <label class="form-label" for="q-input">Search</label>
+              <input class="form-input" type="search" id="q-input" name="q"
+                     placeholder="e.g. Sunset, Café, Fort..."
+                     value="{{ search }}" autocomplete="off">
+            </div>
+
+            <!-- City -->
+            {% if cities %}
+            <div class="form-group">
+              <label class="form-label" for="city-select">City</label>
+              <select class="form-select" id="city-select" name="city">
+                <option value="">All Cities</option>
+                {% for c in cities %}
+                  <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+
+            <!-- Category -->
+            <div class="form-group">
+              <label class="form-label" for="category-select">Category</label>
+              <select class="form-select" id="category-select" name="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>
+                    {{ cat.icon }} {{ cat.label }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Budget -->
+            <div class="form-group">
+              <label class="form-label" for="budget-select">Budget</label>
+              <select class="form-select" id="budget-select" name="budget">
+                <option value="">Any Budget</option>
+                {% for val, label in [
+                  ('under_300','Under ₹300'),
+                  ('300_600','₹300 – ₹600'),
+                  ('600_1000','₹600 – ₹1,000'),
+                  ('above_1000','Above ₹1,000'),
+                ] %}
+                <option value="{{ val }}" {% if selected_budget == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Availability -->
+            <div class="form-group">
+              <label class="form-label" for="avail-select">When</label>
+              <select class="form-select" id="avail-select" name="availability">
+                <option value="">Any Day</option>
+                {% for val, label in [
+                  ('weekday','Weekdays'),
+                  ('saturday','Saturday'),
+                  ('sunday','Sunday'),
+                ] %}
+                <option value="{{ val }}" {% if selected_availability == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Sort -->
+            <div class="form-group">
+              <label class="form-label" for="sort-select">Sort By</label>
+              <select class="form-select" id="sort-select" name="sort">
+                <option value="soonest" {% if selected_sort == 'soonest' %}selected{% endif %}>Soonest First</option>
+                <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+              <button type="submit" class="btn btn-primary btn-sm" style="flex:1;">Apply</button>
+              <a href="{{ url_for('public.explore') }}" class="btn btn-secondary btn-sm" style="flex:1;">Reset</a>
+            </div>
+          </div>
+        </form>
+      </aside>
+
+      <!-- Results -->
+      <div>
+        {% if events %}
+          <div class="events-grid explore-events-grid grid">
+            {% for event in events %}
+              {% include '_event_card.html' %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state__icon">🔍</div>
+            <div class="empty-state__title">No experiences match your filters</div>
+            <p>Try changing your filters or check out upcoming group trips.</p>
+            <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap;margin-top:var(--space-lg);">
+              <a href="{{ url_for('public.explore') }}" class="btn btn-ghost">Clear Filters</a>
+              <a href="{{ url_for('public.trips') }}" class="btn btn-secondary">Browse Trips →</a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  document.querySelectorAll('#filter-form select').forEach(sel => {
+    sel.addEventListener('change', () => document.getElementById('filter-form').submit());
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Contact {{ site.site_name }} — Questions, Bookings & Support{% endblock %}
+
+{% block content %}
+<div style="padding:var(--space-2xl) 0 var(--space-4xl);">
+  <div class="container" style="max-width:600px;margin:0 auto;">
+    <div class="section-heading scroll-fade-in">
+      <div class="section-heading__eyebrow">Get in Touch</div>
+      <h1 class="section-heading__title">REACH OUT.</h1>
+      <p class="section-heading__sub">We're a small team. We read everything.</p>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success scroll-fade-in" style="margin-bottom:var(--space-xl);">
+      <strong>✓ Message received!</strong><br>
+      Thank you for reaching out. Our team has logged your message and will get back to you within 1–2 business days.
+    </div>
+    <a href="{{ url_for('public.explore') }}" class="btn btn-secondary">Back to Experiences →</a>
+    {% else %}
+
+    {% if errors %}
+    <div style="margin-bottom:var(--space-lg);">
+      {% for error in errors %}
+        <div class="alert alert-error" style="margin-bottom:var(--space-sm);">{{ error }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('public.contact') }}"
+          class="card scroll-fade-in" style="padding:var(--space-xl);" data-validate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+
+        <div class="form-group">
+          <label class="form-label" for="contact-category">What's this about?</label>
+          <select class="form-select" id="contact-category" name="category">
+            {% set sel_cat = form_data.category if form_data else request.args.get('category', 'general') %}
+            {% for val, label in [
+              ('general', 'General Question'),
+              ('booking', 'Booking Support'),
+              ('event', 'Event Question'),
+              ('safety', 'Report Inappropriate Behaviour'),
+              ('organiser', 'Become a Host / Organiser'),
+              ('other', 'Something Else'),
+            ] %}
+            <option value="{{ val }}" {% if sel_cat == val %}selected{% endif %}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contact-name">Your Name *</label>
+          <input class="form-input" type="text" id="contact-name" name="name" required
+                 minlength="2" maxlength="150"
+                 placeholder="Your name"
+                 value="{{ form_data.name if form_data else '' }}">
+          <span class="form-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contact-email">Email Address *</label>
+          <input class="form-input" type="email" id="contact-email" name="email" required
+                 maxlength="200"
+                 placeholder="you@example.com"
+                 value="{{ form_data.email if form_data else '' }}">
+          <span class="form-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contact-subject">Subject</label>
+          <input class="form-input" type="text" id="contact-subject" name="subject"
+                 maxlength="200"
+                 placeholder="Brief subject"
+                 value="{{ form_data.subject if form_data else '' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contact-message">Message *</label>
+          <textarea class="form-textarea" id="contact-message" name="message" required
+                    rows="6" placeholder="Tell us what you need..."
+                    minlength="10" maxlength="3000">{{ form_data.message if form_data else '' }}</textarea>
+          <span class="form-error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="contact-submit-btn">SEND MESSAGE →</button>
+      </div>
+    </form>
+    {% endif %}
+
+    <!-- Community & Social Links -->
+    <section class="card contact-community-card scroll-fade-in" style="margin-top:var(--space-2xl);padding:var(--space-xl);" aria-labelledby="community-links-heading">
+      <div class="section-heading__eyebrow" style="margin-bottom:var(--space-xs);">Join the Community</div>
+      <h2 id="community-links-heading" style="font-size:1.25rem;margin-bottom:var(--space-xs);">CONNECT WITH {{ site.site_name }}.</h2>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:var(--space-lg);">
+        Want quick updates on upcoming meetups, last-minute spots, and weekend plans? Jump into our community channels.
+      </p>
+      {% with social_variant='contact' %}
+        {% include "_social_links.html" %}
+      {% endwith %}
+    </section>
+
+    <div class="scroll-fade-in" style="margin-top:var(--space-xl);text-align:center;">
+      <p style="font-size:0.85rem;color:var(--text-muted);">
+        For urgent safety concerns, contact us directly at
+        <a href="mailto:{{ site.contact_email }}" style="color:var(--accent);">{{ site.contact_email }}</a>
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

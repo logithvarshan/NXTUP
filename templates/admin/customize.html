@@ -1,0 +1,448 @@
+{% extends "admin/base.html" %}
+{% block title %}Site Customization — {{ site.site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Customize {{ site.site_name }}</h1>
+    <p class="admin-page-sub">Manage branding, theme colors, hero, sections, categories, navigation, announcements &amp; footer.</p>
+  </div>
+  <form method="POST" action="{{ url_for('admin.customize') }}"
+        onsubmit="return confirm('Reset ALL customization settings back to NXTUP defaults?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="section" value="reset_defaults">
+    <button type="submit" class="btn btn-secondary btn-sm">↺ Reset to Defaults</button>
+  </form>
+</div>
+
+<!-- Tab switcher -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--space-xl);" role="tablist">
+  {% for tab_id, tab_label in [
+    ('branding_theme', '🎨 Branding & Colors'),
+    ('hero_sections', '🏠 Hero, Sections & Featured'),
+    ('categories', '🏷️ Categories'),
+    ('nav_announcements', '📣 Nav & Announcements'),
+    ('footer', '📝 Footer & Social'),
+  ] %}
+  <button type="button"
+          class="btn btn-sm {{ 'btn-primary' if active_tab == tab_id else 'btn-secondary' }} custom-tab-btn"
+          data-tab="{{ tab_id }}" role="tab" aria-selected="{{ 'true' if active_tab == tab_id else 'false' }}">
+    {{ tab_label }}
+  </button>
+  {% endfor %}
+</div>
+
+<!-- TAB 1: BRANDING & THEME COLORS -->
+<div class="custom-tab-panel" id="tab-branding_theme" style="{% if active_tab != 'branding_theme' %}display:none;{% endif %}">
+  <form method="POST" action="{{ url_for('admin.customize') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="section" value="branding_theme">
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Website Identity &amp; Logo</h2>
+      <div class="admin-form-grid">
+        <div class="form-group">
+          <label class="form-label" for="site_name">Website Name *</label>
+          <input class="form-input" type="text" id="site_name" name="site_name" required maxlength="60" value="{{ settings.site_name }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="site_name_prefix">Logo Wordmark Part 1</label>
+          <input class="form-input" type="text" id="site_name_prefix" name="site_name_prefix" maxlength="30" value="{{ settings.site_name_prefix }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="site_name_accent">Logo Wordmark Accent Part</label>
+          <input class="form-input" type="text" id="site_name_accent" name="site_name_accent" maxlength="30" value="{{ settings.site_name_accent }}">
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label" for="tagline">Primary Tagline</label>
+          <input class="form-input" type="text" id="tagline" name="tagline" maxlength="150" value="{{ settings.tagline }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="default_city">Default City</label>
+          <input class="form-input" type="text" id="default_city" name="default_city" maxlength="80" value="{{ settings.default_city }}">
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label" for="brand_tagline_secondary">Secondary Tagline (OG / Meta)</label>
+          <input class="form-input" type="text" id="brand_tagline_secondary" name="brand_tagline_secondary" maxlength="150" value="{{ settings.brand_tagline_secondary }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="contact_email">Support Email</label>
+          <input class="form-input" type="email" id="contact_email" name="contact_email" value="{{ settings.contact_email }}">
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label" for="logo_file">Custom Logo Image (optional)</label>
+          <input class="form-input" type="file" id="logo_file" name="logo_file" accept="image/*">
+          {% if settings.logo_filename %}
+            <div class="form-hint">Current logo: {{ settings.logo_filename }}</div>
+          {% endif %}
+        </div>
+        {% if settings.logo_filename %}
+        <div class="toggle-field">
+          <input type="checkbox" id="remove_logo" name="remove_logo">
+          <label for="remove_logo" style="font-size:0.85rem;">Remove uploaded logo (use text wordmark)</label>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Theme Colors</h2>
+      <div class="admin-form-grid">
+        {% for key, label in [
+          ('primary_bg', 'Primary Background'),
+          ('secondary_bg', 'Secondary Background'),
+          ('accent_color', 'Accent Color'),
+          ('text_color', 'Primary Text Color'),
+        ] %}
+        <div class="form-group">
+          <label class="form-label" for="{{ key }}">{{ label }}</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" value="{{ settings[key] }}"
+                   onchange="document.getElementById('{{ key }}').value = this.value.toUpperCase()"
+                   style="width:44px;height:44px;border:1px solid var(--border);border-radius:8px;background:none;cursor:pointer;">
+            <input class="form-input" type="text" id="{{ key }}" name="{{ key }}" pattern="^#[0-9A-Fa-f]{6}$"
+                   value="{{ settings[key] }}" required>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Save Branding &amp; Theme →</button>
+  </form>
+</div>
+
+<!-- TAB 2: HERO, HOMEPAGE SECTIONS & FEATURED EVENTS -->
+<div class="custom-tab-panel" id="tab-hero_sections" style="{% if active_tab != 'hero_sections' %}display:none;{% endif %}">
+  <form method="POST" action="{{ url_for('admin.customize') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="section" value="hero_sections">
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Homepage Hero Content</h2>
+      <div class="admin-form-grid">
+        <div class="form-group span-2">
+          <label class="form-label" for="hero_eyebrow">Hero Eyebrow Pill</label>
+          <input class="form-input" type="text" id="hero_eyebrow" name="hero_eyebrow" value="{{ settings.hero_eyebrow }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hero_image_file">Hero Background Image</label>
+          <input class="form-input" type="file" id="hero_image_file" name="hero_image_file" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hero_heading_line1">Heading Line 1</label>
+          <input class="form-input" type="text" id="hero_heading_line1" name="hero_heading_line1" value="{{ settings.hero_heading_line1 }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hero_heading_line2">Heading Line 2</label>
+          <input class="form-input" type="text" id="hero_heading_line2" name="hero_heading_line2" value="{{ settings.hero_heading_line2 }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hero_heading_accent">Heading Accent Word</label>
+          <input class="form-input" type="text" id="hero_heading_accent" name="hero_heading_accent" value="{{ settings.hero_heading_accent }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hero_heading_line4">Heading Line 4</label>
+          <input class="form-input" type="text" id="hero_heading_line4" name="hero_heading_line4" value="{{ settings.hero_heading_line4 }}">
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label" for="hero_subtitle">Hero Subtitle</label>
+          <input class="form-input" type="text" id="hero_subtitle" name="hero_subtitle" value="{{ settings.hero_subtitle }}">
+        </div>
+        <div class="form-group span-3">
+          <label class="form-label" for="hero_description">Hero Description</label>
+          <textarea class="form-textarea" id="hero_description" name="hero_description" rows="3">{{ settings.hero_description }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hero_cta_primary">Primary CTA Button</label>
+          <input class="form-input" type="text" id="hero_cta_primary" name="hero_cta_primary" value="{{ settings.hero_cta_primary }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hero_cta_secondary">Secondary CTA Button</label>
+          <input class="form-input" type="text" id="hero_cta_secondary" name="hero_cta_secondary" value="{{ settings.hero_cta_secondary }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Homepage Sections Visibility &amp; Headings</h2>
+      <div class="admin-form-grid" style="margin-bottom:var(--space-lg);">
+        {% for toggle_key, toggle_label in [
+          ('show_categories_section', 'Show Vibe Categories Section'),
+          ('show_featured_section', 'Show Featured Events Section'),
+          ('show_upcoming_section', 'Show Upcoming Plans Section'),
+          ('show_firsttimer_section', 'Show First-Timer Section'),
+          ('show_surprise_section', 'Show Surprise Me Da! Section'),
+          ('show_howitworks_section', 'Show How It Works Section'),
+          ('show_vibe_section', 'Show Our Vibe Section'),
+          ('show_stories_section', 'Show Community Stories Section'),
+          ('show_safety_section', 'Show Safety & Trust Section'),
+        ] %}
+        <div class="toggle-field">
+          <input type="checkbox" id="{{ toggle_key }}" name="{{ toggle_key }}" {% if settings[toggle_key] %}checked{% endif %}>
+          <label for="{{ toggle_key }}" style="font-size:0.88rem;">{{ toggle_label }}</label>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="admin-form-grid">
+        <div class="form-group">
+          <label class="form-label" for="categories_eyebrow">Categories Eyebrow</label>
+          <input class="form-input" type="text" id="categories_eyebrow" name="categories_eyebrow" value="{{ settings.categories_eyebrow }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="categories_title">Categories Heading</label>
+          <input class="form-input" type="text" id="categories_title" name="categories_title" value="{{ settings.categories_title }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="categories_subtitle">Categories Subtitle</label>
+          <input class="form-input" type="text" id="categories_subtitle" name="categories_subtitle" value="{{ settings.categories_subtitle }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="upcoming_eyebrow">Upcoming Eyebrow</label>
+          <input class="form-input" type="text" id="upcoming_eyebrow" name="upcoming_eyebrow" value="{{ settings.upcoming_eyebrow }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="upcoming_title">Upcoming Heading</label>
+          <input class="form-input" type="text" id="upcoming_title" name="upcoming_title" value="{{ settings.upcoming_title }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="upcoming_subtitle">Upcoming Subtitle</label>
+          <input class="form-input" type="text" id="upcoming_subtitle" name="upcoming_subtitle" value="{{ settings.upcoming_subtitle }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="featured_eyebrow">Featured Eyebrow</label>
+          <input class="form-input" type="text" id="featured_eyebrow" name="featured_eyebrow" value="{{ settings.featured_eyebrow }}">
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label" for="featured_title">Featured Heading</label>
+          <input class="form-input" type="text" id="featured_title" name="featured_title" value="{{ settings.featured_title }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Featured Events Selection</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:var(--space-md);">Select published events to highlight in the Featured section on the homepage.</p>
+      <div class="admin-form-grid">
+        {% for ev in all_events %}
+        <div class="toggle-field">
+          <input type="checkbox" id="feat_{{ ev.id }}" name="featured_event_ids" value="{{ ev.id }}"
+                 {% if ev.id in featured_ids %}checked{% endif %}>
+          <label for="feat_{{ ev.id }}" style="font-size:0.85rem;">{{ ev.title }} ({{ ev.city }})</label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Save Hero &amp; Sections →</button>
+  </form>
+</div>
+
+<!-- TAB 3: CATEGORIES MANAGER -->
+<div class="custom-tab-panel" id="tab-categories" style="{% if active_tab != 'categories' %}display:none;{% endif %}">
+  <form method="POST" action="{{ url_for('admin.customize') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="section" value="categories">
+
+    {% for cat in categories %}
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Category: {{ cat.slug }}</h2>
+      <div class="admin-form-grid">
+        <div class="form-group">
+          <label class="form-label">Label *</label>
+          <input class="form-input" type="text" name="cat_label_{{ cat.slug }}" value="{{ cat.label }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emoji Icon</label>
+          <input class="form-input" type="text" name="cat_icon_{{ cat.slug }}" value="{{ cat.icon }}" maxlength="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Accent Color</label>
+          <input class="form-input" type="text" name="cat_color_{{ cat.slug }}" value="{{ cat.color }}" pattern="^#[0-9A-Fa-f]{6}$">
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Description</label>
+          <input class="form-input" type="text" name="cat_desc_{{ cat.slug }}" value="{{ cat.description }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">CTA Button Label</label>
+          <input class="form-input" type="text" name="cat_cta_{{ cat.slug }}" value="{{ cat.cta_label }}">
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Tags (comma-separated)</label>
+          <input class="form-input" type="text" name="cat_tags_{{ cat.slug }}" value="{{ cat.tags | join(', ') }}">
+        </div>
+        <div style="display:flex;gap:var(--space-lg);align-items:center;">
+          <div class="toggle-field">
+            <input type="checkbox" id="cat_enabled_{{ cat.slug }}" name="cat_enabled_{{ cat.slug }}" {% if cat.enabled %}checked{% endif %}>
+            <label for="cat_enabled_{{ cat.slug }}" style="font-size:0.85rem;">Enabled</label>
+          </div>
+          <div class="toggle-field">
+            <input type="checkbox" id="cat_home_{{ cat.slug }}" name="cat_home_{{ cat.slug }}" {% if cat.show_on_home %}checked{% endif %}>
+            <label for="cat_home_{{ cat.slug }}" style="font-size:0.85rem;">Show on Home</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">+ Add New Category (Optional)</h2>
+      <div class="admin-form-grid">
+        <div class="form-group">
+          <label class="form-label">Slug (lowercase, e.g. fitness)</label>
+          <input class="form-input" type="text" name="new_cat_slug" placeholder="fitness">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Label</label>
+          <input class="form-input" type="text" name="new_cat_label" placeholder="Move Pannalam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon &amp; Color</label>
+          <div style="display:flex;gap:8px;">
+            <input class="form-input" type="text" name="new_cat_icon" placeholder="🏃" style="width:70px;">
+            <input class="form-input" type="text" name="new_cat_color" value="#C8FF00">
+          </div>
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Description</label>
+          <input class="form-input" type="text" name="new_cat_desc" placeholder="Short category description">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags (comma-separated)</label>
+          <input class="form-input" type="text" name="new_cat_tags" placeholder="Run Club, Cycling">
+        </div>
+        <div class="form-group">
+          <label class="form-label">CTA Label</label>
+          <input class="form-input" type="text" name="new_cat_cta" placeholder="JOIN NOW →">
+        </div>
+        <div class="toggle-field">
+          <input type="checkbox" id="new_cat_home" name="new_cat_home" checked>
+          <label for="new_cat_home" style="font-size:0.85rem;">Show on Home</label>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Save Categories →</button>
+  </form>
+</div>
+
+<!-- TAB 4: NAVIGATION & ANNOUNCEMENTS -->
+<div class="custom-tab-panel" id="tab-nav_announcements" style="{% if active_tab != 'nav_announcements' %}display:none;{% endif %}">
+  <form method="POST" action="{{ url_for('admin.customize') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="section" value="nav_announcements">
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Website Announcement Banner</h2>
+      <div class="admin-form-grid">
+        <div class="toggle-field span-3">
+          <input type="checkbox" id="announcement_enabled" name="announcement_enabled" {% if settings.announcement_enabled %}checked{% endif %}>
+          <label for="announcement_enabled" style="font-size:0.9rem;">Enable Top Announcement Banner</label>
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label" for="announcement_text">Announcement Text</label>
+          <input class="form-input" type="text" id="announcement_text" name="announcement_text" maxlength="200"
+                 placeholder="e.g. New Yelagiri weekend trip registrations open now!"
+                 value="{{ settings.announcement_text }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="announcement_link">Link URL (optional)</label>
+          <input class="form-input" type="text" id="announcement_link" name="announcement_link"
+                 placeholder="/trips or https://..." value="{{ settings.announcement_link }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="announcement_link_label">Link Text</label>
+          <input class="form-input" type="text" id="announcement_link_label" name="announcement_link_label"
+                 value="{{ settings.announcement_link_label }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Navigation Labels</h2>
+      <div class="admin-form-grid">
+        {% for nav_key, nav_title in [
+          ('nav_home', 'Home Link'),
+          ('nav_explore', 'Explore Link'),
+          ('nav_trips', 'Trips Link'),
+          ('nav_stories', 'Stories Link'),
+          ('nav_about', 'About Link'),
+          ('nav_my_plans', 'My Plans Link'),
+          ('nav_cta', 'Primary Nav CTA Button'),
+        ] %}
+        <div class="form-group">
+          <label class="form-label" for="{{ nav_key }}">{{ nav_title }}</label>
+          <input class="form-input" type="text" id="{{ nav_key }}" name="{{ nav_key }}" required maxlength="40" value="{{ settings[nav_key] }}">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Save Navigation &amp; Announcements →</button>
+  </form>
+</div>
+
+<!-- TAB 5: FOOTER & SOCIAL -->
+<div class="custom-tab-panel" id="tab-footer" style="{% if active_tab != 'footer' %}display:none;{% endif %}">
+  <form method="POST" action="{{ url_for('admin.customize') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="section" value="footer">
+
+    <div class="admin-form-card">
+      <h2 class="admin-form-card__title">Footer Content &amp; Social Links</h2>
+      <div class="admin-form-grid">
+        <div class="form-group span-3">
+          <label class="form-label" for="footer_tagline">Footer Tagline</label>
+          <textarea class="form-textarea" id="footer_tagline" name="footer_tagline" rows="2">{{ settings.footer_tagline }}</textarea>
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label" for="footer_copyright">Copyright Text</label>
+          <input class="form-input" type="text" id="footer_copyright" name="footer_copyright" value="{{ settings.footer_copyright }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="footer_made_in">Right-side Signature Text</label>
+          <input class="form-input" type="text" id="footer_made_in" name="footer_made_in" value="{{ settings.footer_made_in }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="social_instagram">Instagram URL</label>
+          <input class="form-input" type="url" id="social_instagram" name="social_instagram" placeholder="https://instagram.com/..." value="{{ settings.social_instagram }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="social_twitter">X / Twitter URL</label>
+          <input class="form-input" type="url" id="social_twitter" name="social_twitter" placeholder="https://x.com/..." value="{{ settings.social_twitter }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="social_whatsapp">WhatsApp Community URL</label>
+          <input class="form-input" type="url" id="social_whatsapp" name="social_whatsapp" placeholder="https://chat.whatsapp.com/..." value="{{ settings.social_whatsapp }}">
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Save Footer Content →</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const btns = document.querySelectorAll('.custom-tab-btn');
+  const panels = document.querySelectorAll('.custom-tab-panel');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      btns.forEach(b => {
+        b.classList.toggle('btn-primary', b === btn);
+        b.classList.toggle('btn-secondary', b !== btn);
+        b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+      });
+      panels.forEach(p => {
+        p.style.display = p.id === 'tab-' + target ? 'block' : 'none';
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

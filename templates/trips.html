@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Group Trips & Weekend Getaways — {{ site.site_name }}{% endblock %}
+{% block meta_description %}Join small-group day trips and weekend getaways with strangers from {{ site.default_city }}. Planned transport, hosts, and real connections.{% endblock %}
+
+{% block content %}
+<div style="padding-top:var(--space-2xl);padding-bottom:var(--space-4xl);">
+  <div class="container">
+
+    <!-- Page header -->
+    <div class="section-heading scroll-fade-in" style="margin-bottom:var(--space-xl);">
+      <div class="section-heading__eyebrow">{{ trips|length }} upcoming trip{{ 's' if trips|length != 1 }}</div>
+      <h1 class="section-heading__title">GO SOMEWHERE.<br><span style="color:var(--accent);">TOGETHER.</span></h1>
+      <p class="section-heading__sub">
+        Day trips and weekend escapes curated for small groups. Shared transport, verified hosts, zero planning stress.
+      </p>
+    </div>
+
+    <!-- Filter bar -->
+    <form method="GET" action="{{ url_for('public.trips') }}" class="card" style="padding:var(--space-lg);margin-bottom:var(--space-2xl);">
+      <div class="trips-filter-grid">
+        <div class="form-group">
+          <label class="form-label" for="trip-q">Search Trips</label>
+          <input class="form-input" type="search" id="trip-q" name="q"
+                 placeholder="e.g. Yelagiri, Hills..." value="{{ search }}" autocomplete="off">
+        </div>
+
+        {% if cities|length > 1 %}
+        <div class="form-group">
+          <label class="form-label" for="trip-city">Departure City</label>
+          <select class="form-select" id="trip-city" name="city">
+            <option value="">All Cities</option>
+            {% for c in cities %}
+              <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+          <label class="form-label" for="trip-level">Activity Level</label>
+          <select class="form-select" id="trip-level" name="level">
+            <option value="">Any Level</option>
+            <option value="easy" {% if selected_level == 'easy' %}selected{% endif %}>Easy</option>
+            <option value="moderate" {% if selected_level == 'moderate' %}selected{% endif %}>Moderate</option>
+            <option value="active" {% if selected_level == 'active' %}selected{% endif %}>Active</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="trip-budget">Budget</label>
+          <select class="form-select" id="trip-budget" name="budget">
+            <option value="">Any Budget</option>
+            <option value="under_500" {% if selected_budget == 'under_500' %}selected{% endif %}>Under ₹500</option>
+            <option value="500_1000" {% if selected_budget == '500_1000' %}selected{% endif %}>₹500 – ₹1,000</option>
+            <option value="above_1000" {% if selected_budget == 'above_1000' %}selected{% endif %}>Above ₹1,000</option>
+          </select>
+        </div>
+
+        <div style="display:flex;gap:var(--space-sm);align-items:flex-end;">
+          <button type="submit" class="btn btn-primary btn-sm" style="flex:1;">Filter</button>
+          <a href="{{ url_for('public.trips') }}" class="btn btn-secondary btn-sm">Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Trips grid -->
+    {% if trips %}
+      <div class="grid trips-grid">
+        {% for event in trips %}
+          <article class="event-card" aria-label="{{ event.title }}">
+            {% if event.image_filename %}
+              <img class="event-card__image"
+                   src="{{ url_for('static', filename='images/' + event.image_filename) }}"
+                   alt="{{ event.title }}" loading="lazy">
+            {% else %}
+              <div class="event-card__image-placeholder" aria-hidden="true">🚌</div>
+            {% endif %}
+
+            <div class="event-card__body">
+              <div class="event-card__meta">
+                <span class="badge badge-trip">🚌 Trip</span>
+                {% if event.physical_level %}
+                  <span class="badge badge-explore">{{ event.physical_level | title }}</span>
+                {% endif %}
+                {% set avail = event.available_places %}
+                {% if avail == 0 %}
+                  <span class="badge badge-sold-out">Sold Out</span>
+                {% elif avail <= 3 %}
+                  <span class="badge badge-few-left">{{ avail }} left</span>
+                {% endif %}
+              </div>
+
+              <h2 class="event-card__title">{{ event.title }}</h2>
+              <p class="event-card__desc">{{ event.short_description }}</p>
+
+              <div class="event-card__details">
+                <span class="event-card__detail">📅 {{ event.start_datetime | date_display }}</span>
+                <span class="event-card__detail">⏱ {{ event.duration_display }}</span>
+                <span class="event-card__detail">📍 From {{ event.city }}</span>
+                <span class="event-card__detail">👥 up to {{ event.capacity }}</span>
+              </div>
+
+              {% if event.transport_info %}
+                <p style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">
+                  🚐 {{ event.transport_info }}
+                </p>
+              {% endif %}
+
+              <div class="event-card__footer">
+                <div>
+                  <div class="event-card__price">{{ event.price | rupees }}</div>
+                  <div style="font-size:0.7rem;color:var(--text-muted);">per person</div>
+                </div>
+                <a href="{{ url_for('public.experience_detail', slug=event.slug) }}"
+                   class="btn btn-primary btn-sm"
+                   aria-label="View trip: {{ event.title }}">
+                  {% if event.is_sold_out %}VIEW DETAILS{% else %}VIEW TRIP →{% endif %}
+                </a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state__icon">🚌</div>
+        <div class="empty-state__title">No trips match your filters</div>
+        <p>New day trips and weekend getaways are added regularly. Check back soon or explore local meetups!</p>
+        <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap;margin-top:var(--space-lg);">
+          <a href="{{ url_for('public.trips') }}" class="btn btn-secondary btn-sm">Clear Filters</a>
+          <a href="{{ url_for('public.explore') }}" class="btn btn-primary btn-sm">Explore Meetups →</a>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ action }} Event — {{ site.site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">{{ action }} Experience</h1>
+    <p class="admin-page-sub">Fill out clear, honest details for participants.</p>
+  </div>
+  <a href="{{ url_for('admin.events') }}" class="btn btn-secondary btn-sm">← Back to Events</a>
+</div>
+
+<form method="POST" enctype="multipart/form-data" data-validate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <!-- Basic Info -->
+  <div class="admin-form-card">
+    <h2 class="admin-form-card__title">Basic Information</h2>
+    <div class="admin-form-grid">
+      <div class="form-group span-2">
+        <label class="form-label" for="ev-title">Title *</label>
+        <input class="form-input" type="text" id="ev-title" name="title" required maxlength="200"
+               value="{{ form_data.title if form_data else (event.title if event else '') }}">
+        <span class="form-error"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-category">Category *</label>
+        {% set sel_cat = form_data.category if form_data else (event.category if event else 'meet') %}
+        <select class="form-select" id="ev-category" name="category" required>
+          {% for cat in all_categories %}
+            <option value="{{ cat.slug }}" {% if sel_cat == cat.slug %}selected{% endif %}>
+              {{ cat.icon }} {{ cat.label }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group span-3">
+        <label class="form-label" for="ev-short">Short Description (for cards) *</label>
+        <input class="form-input" type="text" id="ev-short" name="short_description" required maxlength="300"
+               value="{{ form_data.short_description if form_data else (event.short_description if event else '') }}">
+        <span class="form-error"></span>
+      </div>
+
+      <div class="form-group span-3">
+        <label class="form-label" for="ev-desc">Full Description *</label>
+        <textarea class="form-textarea" id="ev-desc" name="description" rows="4" required>{{ form_data.description if form_data else (event.description if event else '') }}</textarea>
+        <span class="form-error"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Date, Location & Capacity -->
+  <div class="admin-form-card">
+    <h2 class="admin-form-card__title">Schedule, Location &amp; Capacity</h2>
+    <div class="admin-form-grid">
+      <div class="form-group">
+        <label class="form-label" for="ev-start">Start Date &amp; Time *</label>
+        <input class="form-input" type="datetime-local" id="ev-start" name="start_datetime" required
+               value="{{ form_data.start_datetime if form_data else (event.start_datetime.strftime('%Y-%m-%dT%H:%M') if event and event.start_datetime else '') }}">
+        <span class="form-error"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-dur">Duration (minutes) *</label>
+        <input class="form-input" type="number" id="ev-dur" name="duration_minutes" min="15" max="20160" required
+               value="{{ form_data.duration_minutes if form_data else (event.duration_minutes if event else 120) }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-city">City *</label>
+        <input class="form-input" type="text" id="ev-city" name="city" required maxlength="100"
+               value="{{ form_data.city if form_data else (event.city if event else site.default_city) }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-loc">Location Name</label>
+        <input class="form-input" type="text" id="ev-loc" name="location_name" maxlength="200"
+               value="{{ form_data.location_name if form_data else (event.location_name if event and event.location_name else '') }}">
+      </div>
+
+      <div class="form-group span-2">
+        <label class="form-label" for="ev-loc-det">Meeting Point Details</label>
+        <input class="form-input" type="text" id="ev-loc-det" name="location_details"
+               value="{{ form_data.location_details if form_data else (event.location_details if event and event.location_details else '') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-price">Price (₹, 0 for Free) *</label>
+        <input class="form-input" type="number" id="ev-price" name="price" min="0" required
+               value="{{ form_data.price if form_data else (event.price if event else 199) }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-cap">Capacity *</label>
+        <input class="form-input" type="number" id="ev-cap" name="capacity" min="1" max="500" required
+               value="{{ form_data.capacity if form_data else (event.capacity if event else 12) }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-age">Minimum Age (optional, 18+)</label>
+        <input class="form-input" type="number" id="ev-age" name="min_age" min="18" max="99"
+               value="{{ form_data.min_age if form_data else (event.min_age if event and event.min_age else '') }}">
+      </div>
+    </div>
+  </div>
+
+  <!-- Participant Info & Trip Logistics -->
+  <div class="admin-form-card">
+    <h2 class="admin-form-card__title">Experience Details &amp; Trip Info</h2>
+    <div class="admin-form-grid">
+      <div class="form-group span-3">
+        <label class="form-label" for="ev-incl">What's Included (separate with ·)</label>
+        <input class="form-input" type="text" id="ev-incl" name="what_included" placeholder="Host · Icebreakers · Refreshments"
+               value="{{ form_data.what_included if form_data else (event.what_included if event and event.what_included else '') }}">
+      </div>
+
+      <div class="form-group span-3">
+        <label class="form-label" for="ev-notin">What's Not Included (separate with ·)</label>
+        <input class="form-input" type="text" id="ev-notin" name="what_not_included" placeholder="Transport · Personal expenses"
+               value="{{ form_data.what_not_included if form_data else (event.what_not_included if event and event.what_not_included else '') }}">
+      </div>
+
+      <div class="form-group span-3">
+        <label class="form-label" for="ev-bring">What to Bring (separate with ·)</label>
+        <input class="form-input" type="text" id="ev-bring" name="what_to_bring" placeholder="Water bottle · Comfortable shoes"
+               value="{{ form_data.what_to_bring if form_data else (event.what_to_bring if event and event.what_to_bring else '') }}">
+      </div>
+
+      <div class="form-group span-3">
+        <label class="form-label" for="ev-plan">Activity Plan (optional)</label>
+        <textarea class="form-textarea" id="ev-plan" name="activity_plan" rows="3">{{ form_data.activity_plan if form_data else (event.activity_plan if event and event.activity_plan else '') }}</textarea>
+      </div>
+
+      <div class="form-group span-2">
+        <label class="form-label" for="ev-safety">Safety Info</label>
+        <input class="form-input" type="text" id="ev-safety" name="safety_info"
+               value="{{ form_data.safety_info if form_data else (event.safety_info if event and event.safety_info else '') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-level">Activity Level (Trips)</label>
+        {% set sel_lvl = form_data.physical_level if form_data else (event.physical_level if event else '') %}
+        <select class="form-select" id="ev-level" name="physical_level">
+          <option value="">None / Standard</option>
+          <option value="easy" {% if sel_lvl == 'easy' %}selected{% endif %}>Easy</option>
+          <option value="moderate" {% if sel_lvl == 'moderate' %}selected{% endif %}>Moderate</option>
+          <option value="active" {% if sel_lvl == 'active' %}selected{% endif %}>Active</option>
+        </select>
+      </div>
+
+      <div class="form-group span-2">
+        <label class="form-label" for="ev-cancel">Cancellation Terms</label>
+        <input class="form-input" type="text" id="ev-cancel" name="cancellation_terms"
+               value="{{ form_data.cancellation_terms if form_data else (event.cancellation_terms if event and event.cancellation_terms else '') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-transport">Transport Info (Trips)</label>
+        <input class="form-input" type="text" id="ev-transport" name="transport_info"
+               value="{{ form_data.transport_info if form_data else (event.transport_info if event and event.transport_info else '') }}">
+      </div>
+    </div>
+  </div>
+
+  <!-- Media & Flags -->
+  <div class="admin-form-card">
+    <h2 class="admin-form-card__title">Image &amp; Publishing</h2>
+    <div class="admin-form-grid">
+      <div class="form-group span-2">
+        <label class="form-label" for="ev-image">Upload Cover Image (PNG, JPG, WEBP, GIF)</label>
+        <input class="form-input" type="file" id="ev-image" name="image" accept="image/*">
+        {% if event and event.image_filename %}
+          <span class="form-hint">Current image: {{ event.image_filename }}</span>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ev-preset">Or Default Stock Image</label>
+        <select class="form-select" id="ev-preset" name="preset_image">
+          <option value="">None</option>
+          <option value="hero_group_sunset.jpg">Sunset Group</option>
+          <option value="cafe_meetup.jpg">Café Meetup</option>
+          <option value="group_exploration.jpg">Group Exploration</option>
+          <option value="vellore_group.jpg">Vellore Group</option>
+          <option value="first_timer.jpg">First Timer</option>
+        </select>
+      </div>
+
+      <div class="toggle-field">
+        <input type="checkbox" id="ev-pub" name="published"
+               {% if (form_data and 'published' in form_data) or (not form_data and event and event.published) %}checked{% endif %}>
+        <label for="ev-pub" style="font-size:0.9rem;">Published (visible to public)</label>
+      </div>
+
+      <div class="toggle-field">
+        <input type="checkbox" id="ev-trip" name="is_trip"
+               {% if (form_data and 'is_trip' in form_data) or (not form_data and event and event.is_trip) %}checked{% endif %}>
+        <label for="ev-trip" style="font-size:0.9rem;">Show on Trips Page</label>
+      </div>
+
+      <div class="toggle-field">
+        <input type="checkbox" id="ev-mystery" name="is_mystery"
+               {% if (form_data and 'is_mystery' in form_data) or (not form_data and event and event.is_mystery) %}checked{% endif %}>
+        <label for="ev-mystery" style="font-size:0.9rem;">Mystery Experience</label>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:var(--space-md);">
+    <button type="submit" class="btn btn-primary btn-lg">Save Experience →</button>
+    <a href="{{ url_for('admin.events') }}" class="btn btn-secondary btn-lg">Cancel</a>
+  </div>
+</form>
+{% endblock %}

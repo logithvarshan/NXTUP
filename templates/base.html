@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-city="{{ site.default_city }}" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="{{ site.primary_bg }}" data-dark-theme-color="{{ site.primary_bg }}" data-light-theme-color="#F7F8F5">
+
+  <!-- Prevent flash of wrong theme before CSS paints -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('nxtup-theme');
+        var theme = (saved === 'light' || saved === 'dark') ? saved : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta && theme === 'light') {
+          meta.setAttribute('content', meta.getAttribute('data-light-theme-color') || '#F7F8F5');
+        }
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
+  <title>{% block title %}{{ site.site_name }} — {{ site.tagline }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ site.site_name }} organises small stranger meetups, social experiences, local explorations, and group trips in {{ site.default_city }}, Tamil Nadu.{% endblock %}">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{% block og_title %}{{ site.site_name }} — {{ site.brand_tagline_secondary }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ site.tagline }} Stranger meetups, social experiences, and group trips in {{ site.default_city }}.{% endblock %}">
+  <meta property="og:site_name" content="{{ site.site_name }}">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+
+  <!-- Dynamic Theme Variables -->
+  <style>
+    :root {
+      --bg-main: {{ site.primary_bg }};
+      --bg-secondary: {{ site.secondary_bg }};
+      --accent: {{ site.accent_color }};
+      --accent-fill: {{ site.accent_color }};
+      --accent-fill-hover: {{ site.accent_hover }};
+      --accent-dim: {{ site.accent_dim }};
+      --accent-border: {{ site.accent_border }};
+      --accent-hover: {{ site.accent_hover }};
+      --shadow-accent: 0 0 24px {{ site.accent_shadow }};
+      --text-primary: {{ site.text_color }};
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if site.announcement_enabled and site.announcement_text %}has-announcement{% endif %}">
+
+{% macro theme_toggle_btn() %}
+<button type="button" class="theme-toggle" data-theme-toggle aria-label="Dark mode active. Switch to light mode" aria-pressed="false" title="Dark Mode (switch to Light)">
+  <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+  <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+</button>
+{% endmacro %}
+
+  <!-- ── Top Navigation (desktop) ──────────────────────────────────── -->
+  <nav class="topnav" role="navigation" aria-label="Main navigation">
+    <div class="container topnav__inner">
+      <a href="{{ url_for('public.index') }}" class="topnav__logo" aria-label="{{ site.site_name }} Home">
+        {% if site.logo_filename %}
+          <img src="{{ url_for('static', filename='images/' + site.logo_filename) }}" alt="{{ site.site_name }}" style="height:32px;width:auto;object-fit:contain;">
+        {% else %}
+          {{ site.site_name_prefix }}<span>{{ site.site_name_accent }}</span>
+        {% endif %}
+      </a>
+      <div class="topnav__links">
+        <a href="{{ url_for('public.index') }}" {% if request.endpoint == 'public.index' %}class="active"{% endif %}>{{ site.nav_home }}</a>
+        <a href="{{ url_for('public.explore') }}" {% if request.endpoint == 'public.explore' %}class="active"{% endif %}>{{ site.nav_explore }}</a>
+        <a href="{{ url_for('public.trips') }}" {% if request.endpoint == 'public.trips' %}class="active"{% endif %}>{{ site.nav_trips }}</a>
+        <a href="{{ url_for('public.reviews') }}" {% if request.endpoint == 'public.reviews' %}class="active"{% endif %}>{{ site.nav_stories }}</a>
+        <a href="{{ url_for('public.about') }}" {% if request.endpoint == 'public.about' %}class="active"{% endif %}>{{ site.nav_about }}</a>
+      </div>
+      <div class="topnav__links">
+        {{ theme_toggle_btn() }}
+        <a href="{{ url_for('public.my_plans') }}" {% if request.endpoint == 'public.my_plans' %}class="active"{% endif %}>{{ site.nav_my_plans }}</a>
+        <a href="{{ url_for('public.explore') }}" class="topnav__cta">{{ site.nav_cta }}</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Mobile Top Header ─────────────────────────────────────────── -->
+  <header class="mobile-topbar mobile-only">
+    <div class="container mobile-topbar__inner">
+      <a href="{{ url_for('public.index') }}" class="topnav__logo" aria-label="{{ site.site_name }} Home" style="font-size:1.3rem;">
+        {% if site.logo_filename %}
+          <img src="{{ url_for('static', filename='images/' + site.logo_filename) }}" alt="{{ site.site_name }}" style="height:26px;width:auto;object-fit:contain;">
+        {% else %}
+          {{ site.site_name_prefix }}<span>{{ site.site_name_accent }}</span>
+        {% endif %}
+      </a>
+      <div style="display:flex;align-items:center;gap:10px;">
+        {{ theme_toggle_btn() }}
+        <a href="{{ url_for('public.about') }}" style="font-size:0.8rem;color:var(--text-secondary);font-weight:500;">{{ site.nav_about }}</a>
+        <a href="{{ url_for('public.contact') }}" class="btn btn-secondary btn-sm" style="padding:0.35rem 0.75rem;font-size:0.75rem;">Contact</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Flash Messages ─────────────────────────────────────────────── -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div style="position:fixed;top:16px;right:16px;z-index:9999;max-width:340px;display:flex;flex-direction:column;gap:8px;">
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ 'success' if cat == 'success' else 'error' if cat == 'error' else 'info' }} flash-msg" role="alert">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ── Announcement Banner ──────────────────────────────────────── -->
+  {% if site.announcement_enabled and site.announcement_text %}
+  <div class="announcement-bar" role="region" aria-label="Announcement">
+    <div class="container announcement-bar__inner">
+      <span>{{ site.announcement_text }}</span>
+      {% if site.announcement_link %}
+        <a href="{{ site.announcement_link }}" class="announcement-bar__link">{{ site.announcement_link_label }}</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Main Content ──────────────────────────────────────────────── -->
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── Footer ────────────────────────────────────────────────────── -->
+  {% block footer %}
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer__grid">
+        <!-- Brand -->
+        <div>
+          <div class="footer__logo">
+            {% if site.logo_filename %}
+              <img src="{{ url_for('static', filename='images/' + site.logo_filename) }}" alt="{{ site.site_name }}" style="height:28px;width:auto;object-fit:contain;">
+            {% else %}
+              {{ site.site_name_prefix }}<span>{{ site.site_name_accent }}</span>
+            {% endif %}
+          </div>
+          <p class="footer__tagline" style="white-space:pre-line;">{{ site.footer_tagline }}</p>
+          {% with social_variant='footer' %}
+            {% include "_social_links.html" %}
+          {% endwith %}
+        </div>
+
+        <!-- Explore -->
+        <div>
+          <div class="footer__col-title">{{ site.nav_explore }}</div>
+          <nav class="footer__links" aria-label="Explore links">
+            <a href="{{ url_for('public.explore') }}">All Experiences</a>
+            <a href="{{ url_for('public.trips') }}">{{ site.nav_trips }}</a>
+            {% for cat in site_categories %}
+              {% if cat.slug not in ('trip', 'mystery') %}
+                <a href="{{ url_for('public.explore') }}?category={{ cat.slug }}">{{ cat.label }}</a>
+              {% endif %}
+            {% endfor %}
+          </nav>
+        </div>
+
+        <!-- Company -->
+        <div>
+          <div class="footer__col-title">{{ site.site_name }}</div>
+          <nav class="footer__links" aria-label="Company links">
+            <a href="{{ url_for('public.about') }}">{{ site.nav_about }}</a>
+            <a href="{{ url_for('public.contact') }}">Contact</a>
+            <a href="{{ url_for('public.reviews') }}">Community {{ site.nav_stories }}</a>
+            <a href="{{ url_for('public.my_plans') }}">{{ site.nav_my_plans }}</a>
+          </nav>
+        </div>
+
+        <!-- Legal -->
+        <div>
+          <div class="footer__col-title">Legal</div>
+          <nav class="footer__links" aria-label="Legal links">
+            <a href="{{ url_for('public.community_guidelines') }}">Community Guidelines</a>
+            <a href="{{ url_for('public.privacy_policy') }}">Privacy Policy</a>
+            <a href="{{ url_for('public.cancellation_policy') }}">Cancellation Policy</a>
+            <a href="{{ url_for('public.contact') }}?category=safety">Report an Issue</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <p class="footer__copy">{{ site.footer_copyright }}</p>
+        <p class="footer__copy" style="color:var(--text-muted)">{{ site.footer_made_in }}</p>
+      </div>
+    </div>
+  </footer>
+  {% endblock %}
+
+  <!-- ── Bottom Navigation (mobile) ───────────────────────────────── -->
+  <nav class="bottomnav" role="navigation" aria-label="Mobile navigation">
+    <div class="bottomnav__inner">
+      <a href="{{ url_for('public.index') }}" class="bottomnav__item {% if request.endpoint == 'public.index' %}active{% endif %}" aria-label="{{ site.nav_home }}">
+        <span class="bottomnav__icon" aria-hidden="true">🏠</span>
+        <span class="bottomnav__label">{{ site.nav_home }}</span>
+      </a>
+      <a href="{{ url_for('public.explore') }}" class="bottomnav__item {% if request.endpoint == 'public.explore' %}active{% endif %}" aria-label="{{ site.nav_explore }}">
+        <span class="bottomnav__icon" aria-hidden="true">🔍</span>
+        <span class="bottomnav__label">{{ site.nav_explore }}</span>
+      </a>
+      <a href="{{ url_for('public.trips') }}" class="bottomnav__item {% if request.endpoint == 'public.trips' %}active{% endif %}" aria-label="{{ site.nav_trips }}">
+        <span class="bottomnav__icon" aria-hidden="true">🚌</span>
+        <span class="bottomnav__label">{{ site.nav_trips }}</span>
+      </a>
+      <a href="{{ url_for('public.reviews') }}" class="bottomnav__item {% if request.endpoint == 'public.reviews' %}active{% endif %}" aria-label="{{ site.nav_stories }}">
+        <span class="bottomnav__icon" aria-hidden="true">⭐</span>
+        <span class="bottomnav__label">{{ site.nav_stories }}</span>
+      </a>
+      <a href="{{ url_for('public.my_plans') }}" class="bottomnav__item {% if request.endpoint == 'public.my_plans' %}active{% endif %}" aria-label="{{ site.nav_my_plans }}">
+        <span class="bottomnav__icon" aria-hidden="true">🎫</span>
+        <span class="bottomnav__label">{{ site.nav_my_plans }}</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Scroll to top -->
+  <button id="scroll-top" aria-label="Scroll to top"
+    style="position:fixed;bottom:calc(var(--bottomnav-h) + 16px);right:16px;width:40px;height:40px;
+           background:var(--bg-elevated);border:1px solid var(--border);border-radius:50%;
+           color:var(--text-secondary);font-size:1rem;z-index:800;opacity:0;pointer-events:none;
+           transition:opacity 0.3s;display:flex;align-items:center;justify-content:center;">↑</button>
+
+  <!-- JS -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

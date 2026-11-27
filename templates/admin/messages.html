@@ -1,0 +1,84 @@
+{% extends "admin/base.html" %}
+{% block title %}Messages &amp; Reports — {{ site.site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Messages &amp; Safety Reports</h1>
+    <p class="admin-page-sub">Inquiries and safety reports submitted via the Contact page.</p>
+  </div>
+</div>
+
+<form method="GET" action="{{ url_for('admin.messages') }}" class="admin-filter-bar">
+  <select class="form-select" name="status" onchange="this.form.submit()">
+    <option value="">All Statuses</option>
+    <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+    <option value="reviewed" {% if status_filter == 'reviewed' %}selected{% endif %}>Reviewed</option>
+    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+  </select>
+</form>
+
+{% if messages %}
+<div class="admin-table-wrap" style="overflow-x:auto;">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>From</th>
+        <th>Category</th>
+        <th>Message</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in messages %}
+      <tr>
+        <td>
+          <strong>{{ m.name }}</strong>
+          <div style="font-size:0.78rem;color:var(--text-secondary);">{{ m.email }}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);">{{ m.created_at | datetime_display }}</div>
+        </td>
+        <td>
+          <span class="badge {% if m.category == 'safety' %}badge-sold-out{% else %}badge-pending{% endif %}">
+            {{ m.category | title }}
+          </span>
+        </td>
+        <td style="max-width:460px;">
+          {% if m.subject %}<strong style="display:block;font-size:0.85rem;margin-bottom:4px;">{{ m.subject }}</strong>{% endif %}
+          <p style="font-size:0.85rem;color:var(--text-secondary);white-space:pre-line;">{{ m.message }}</p>
+        </td>
+        <td>
+          <span class="badge {% if m.status == 'resolved' %}badge-confirmed{% elif m.status == 'reviewed' %}badge-waitlisted{% else %}badge-pending{% endif %}">
+            {{ m.status | title }}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <form method="POST" action="{{ url_for('admin.message_update_status', msg_id=m.id) }}" style="display:flex;gap:6px;margin:0;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="status" class="form-select" style="padding:4px 8px;font-size:0.78rem;width:auto;">
+                <option value="new" {% if m.status == 'new' %}selected{% endif %}>New</option>
+                <option value="reviewed" {% if m.status == 'reviewed' %}selected{% endif %}>Reviewed</option>
+                <option value="resolved" {% if m.status == 'resolved' %}selected{% endif %}>Resolved</option>
+              </select>
+              <button type="submit" class="action-btn action-btn-confirm">Save</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.message_delete', msg_id=m.id) }}" style="margin:0;"
+                  onsubmit="return confirm('Delete this message?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="action-btn action-btn-delete">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state__icon">✉️</div>
+  <div class="empty-state__title">No messages yet</div>
+</div>
+{% endif %}
+{% endblock %}

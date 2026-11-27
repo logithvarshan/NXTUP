@@ -1,0 +1,82 @@
+{% extends "admin/base.html" %}
+{% block title %}Reviews Moderation — {{ site.site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Community Stories &amp; Reviews</h1>
+    <p class="admin-page-sub">Approve genuine participant stories before they appear publicly.</p>
+  </div>
+</div>
+
+{% if reviews %}
+<div class="admin-table-wrap" style="overflow-x:auto;">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Reviewer</th>
+        <th>Story</th>
+        <th>Rating</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reviews %}
+      <tr>
+        <td>
+          <strong>{{ r.reviewer_name }}</strong>
+          {% if r.experience_type %}
+            <div style="font-size:0.75rem;color:var(--text-muted);">{{ r.experience_type }}</div>
+          {% endif %}
+          {% if r.is_sample %}
+            <span class="badge badge-waitlisted" style="margin-top:4px;">Sample</span>
+          {% endif %}
+        </td>
+        <td style="max-width:460px;font-size:0.85rem;color:var(--text-secondary);">"{{ r.story }}"</td>
+        <td>
+          {% if r.rating %}
+            <span class="stars">{{ '★' * r.rating }}</span>
+          {% else %}
+            <span style="color:var(--text-muted);">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if r.approved %}
+            <span class="badge badge-confirmed">Approved</span>
+          {% else %}
+            <span class="badge badge-pending">Pending</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            {% if not r.approved %}
+              <form method="POST" action="{{ url_for('admin.approve_review', review_id=r.id) }}" style="margin:0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="action-btn action-btn-confirm">Approve</button>
+              </form>
+            {% else %}
+              <form method="POST" action="{{ url_for('admin.unapprove_review', review_id=r.id) }}" style="margin:0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="action-btn action-btn-edit">Hide</button>
+              </form>
+            {% endif %}
+            <form method="POST" action="{{ url_for('admin.delete_review', review_id=r.id) }}" style="margin:0;"
+                  onsubmit="return confirm('Delete this review?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="action-btn action-btn-delete">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state__icon">⭐</div>
+  <div class="empty-state__title">No stories submitted yet</div>
+</div>
+{% endif %}
+{% endblock %}

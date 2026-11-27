@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site.site_name }} — {{ site.tagline }} | {{ site.default_city }}{% endblock %}
+{% block meta_description %}Meet strangers. Make plans. Explore {{ site.default_city }}. {{ site.site_name }} organises small-group meetups, social experiences, and trips for people ready to write their next story.{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION A — HERO
+════════════════════════════════════════════════════════════════════ -->
+<section class="hero" aria-labelledby="hero-heading"
+  style="position:relative;overflow:hidden;display:flex;align-items:center;background:var(--bg-main);">
+
+  <!-- Hero background image -->
+  <div style="position:absolute;inset:0;z-index:0;">
+    <img src="{{ url_for('static', filename='images/' + (site.hero_image or 'hero_group_sunset.jpg')) }}"
+         alt="" role="presentation"
+         class="hero__bg-img"
+         loading="eager">
+    <div class="hero__overlay"></div>
+  </div>
+
+  <div class="container" style="position:relative;z-index:1;padding-top:var(--space-3xl);padding-bottom:var(--space-4xl);">
+    <div class="hero__content">
+
+      {% if site.hero_eyebrow %}
+      <div style="display:inline-flex;align-items:center;gap:8px;
+                  background:var(--accent-dim);border:1px solid {{ site.accent_border }};
+                  padding:6px 14px;border-radius:var(--radius-full);
+                  margin-bottom:var(--space-lg);" class="scroll-fade-in">
+        <span style="font-size:0.5rem;background:var(--accent);border-radius:50%;width:6px;height:6px;display:block;"></span>
+        <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;color:var(--accent);text-transform:uppercase;">{{ site.hero_eyebrow }}</span>
+      </div>
+      {% endif %}
+
+      <h1 id="hero-heading" class="display-xl scroll-fade-in" style="animation-delay:0.1s;margin-bottom:var(--space-md);">
+        {{ site.hero_heading_line1 }}{% if site.hero_heading_line2 %}<br>{{ site.hero_heading_line2 }}{% endif %}
+        {% if site.hero_heading_accent %}<br><span style="color:var(--accent);">{{ site.hero_heading_accent }}</span>{% endif %}
+        {% if site.hero_heading_line4 %}<br>{{ site.hero_heading_line4 }}{% endif %}
+      </h1>
+
+      {% if site.hero_subtitle %}
+      <p style="font-size:1.05rem;color:var(--text-secondary);margin-bottom:var(--space-sm);"
+         class="scroll-fade-in">{{ site.hero_subtitle }}</p>
+      {% endif %}
+
+      {% if site.hero_description %}
+      <p style="font-size:0.95rem;color:var(--text-secondary);max-width:480px;line-height:1.7;margin-bottom:var(--space-xl);white-space:pre-line;"
+         class="scroll-fade-in">{{ site.hero_description }}</p>
+      {% endif %}
+
+      <div class="hero__buttons scroll-fade-in" style="display:flex;flex-direction:column;gap:var(--space-sm);max-width:360px;">
+        <a href="{{ url_for('public.explore') }}" class="btn btn-primary btn-lg" id="hero-cta-primary">
+          {{ site.hero_cta_primary }}
+        </a>
+        <a href="#how-it-works" class="btn btn-secondary btn-lg" id="hero-cta-secondary">
+          {{ site.hero_cta_secondary }}
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION B — ENNA PLAN? (Categories)
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_categories_section and home_categories %}
+<section class="section" aria-labelledby="enna-plan-heading">
+  <div class="container">
+    <div class="section-heading scroll-fade-in">
+      <div class="section-heading__eyebrow">{{ site.categories_eyebrow }}</div>
+      <h2 id="enna-plan-heading" class="section-heading__title">{{ site.categories_title }}</h2>
+      <p class="section-heading__sub">{{ site.categories_subtitle }}</p>
+    </div>
+
+    <div class="cat-grid grid">
+      {% for cat in home_categories %}
+      <a href="{{ url_for('public.explore') }}?category={{ cat.slug }}"
+         class="cat-card cat-card--{{ cat.slug }} scroll-fade-in" id="cat-{{ cat.slug }}"
+         aria-label="{{ cat.label }} — {{ cat.description }}"
+         style="--cat-accent: {{ cat.color }};">
+        <div class="cat-card__icon">{{ cat.icon }}</div>
+        <div class="cat-card__title" style="color:{{ cat.color }};">{{ cat.label | upper }}</div>
+        <p class="cat-card__desc">{{ cat.description }}</p>
+        {% if cat.tags %}
+        <div class="cat-card__experiences">
+          {% for tag in cat.tags %}
+            <span class="cat-card__tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <span class="btn btn-sm cat-card__cta" style="background:{{ cat.color_dim }};color:{{ cat.color }};border:1px solid {{ cat.color_border }};">{{ cat.cta_label }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION B2 — FEATURED EXPERIENCES (Admin-selected)
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_featured_section and featured_events %}
+<section class="section" style="background:var(--bg-secondary);" aria-labelledby="featured-heading">
+  <div class="container">
+    <div class="section-heading scroll-fade-in" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md);">
+      <div>
+        <div class="section-heading__eyebrow">{{ site.featured_eyebrow }}</div>
+        <h2 id="featured-heading" class="section-heading__title">{{ site.featured_title }}</h2>
+      </div>
+      <a href="{{ url_for('public.explore') }}" class="btn btn-ghost desktop-only">VIEW ALL →</a>
+    </div>
+
+    <div class="events-grid grid">
+      {% for event in featured_events %}
+        {% include '_event_card.html' %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION C — UPCOMING PLANS
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_upcoming_section %}
+<section class="section" {% if not (site.show_featured_section and featured_events) %}style="background:var(--bg-secondary);"{% endif %} aria-labelledby="upcoming-heading">
+  <div class="container">
+    <div class="section-heading scroll-fade-in" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md);">
+      <div>
+        <div class="section-heading__eyebrow">{{ site.upcoming_eyebrow }}</div>
+        <h2 id="upcoming-heading" class="section-heading__title">{{ site.upcoming_title }}</h2>
+        <p class="section-heading__sub">{{ site.upcoming_subtitle }}</p>
+      </div>
+      <a href="{{ url_for('public.explore') }}" class="btn btn-ghost desktop-only">VIEW ALL →</a>
+    </div>
+
+    {% if upcoming_events %}
+      <!-- Mobile: horizontal scroll -->
+      <div class="events-scroll mobile-only">
+        {% for event in upcoming_events %}
+          {% include '_event_card.html' %}
+        {% endfor %}
+      </div>
+      <!-- Tablet+: grid -->
+      <div class="events-grid grid home-events-desktop">
+        {% for event in upcoming_events %}
+          {% include '_event_card.html' %}
+        {% endfor %}
+      </div>
+      <!-- Accessible non-scroll fallback on mobile -->
+      <div class="mobile-only" style="margin-top:var(--space-md);">
+        <a href="{{ url_for('public.explore') }}" class="btn btn-secondary btn-full">SEE ALL PLANS →</a>
+      </div>
+    {% else %}
+      <div class="empty-state scroll-fade-in">
+        <div class="empty-state__icon">🗓️</div>
+        <div class="empty-state__title">No upcoming plans yet</div>
+        <p>We're planning something interesting. Check back soon!</p>
+        <a href="{{ url_for('public.contact') }}" class="btn btn-ghost mt-lg">Get notified when we launch →</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION D — FIRST TIMER
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_firsttimer_section %}
+<section class="section" aria-labelledby="firsttimer-heading">
+  <div class="container">
+    <div class="firsttimer-grid grid">
+      <div class="scroll-fade-in">
+        <div class="section-heading__eyebrow">First Time?</div>
+        <h2 id="firsttimer-heading" class="section-heading__title" style="margin-bottom:var(--space-lg);">
+          FRIENDS ILLA?<br>PARAVA ILLA.
+        </h2>
+        <p style="color:var(--text-secondary);margin-bottom:var(--space-xl);line-height:1.7;">
+          First time joining a meetup? You don't need to bring a group of friends. Come alone. The experience is designed for exactly that.
+        </p>
+
+        <ul style="display:flex;flex-direction:column;gap:var(--space-md);margin-bottom:var(--space-xl);">
+          {% set first_timer_points = [
+            ('✓', 'You can register alone — no group required.'),
+            ('✓', 'Activities help people start conversations naturally.'),
+            ('✓', 'Hosts explain how everything works before it begins.'),
+            ('✓', 'Participate at your own comfort level — no pressure.'),
+            ('✓', 'Community rules apply to everyone. Always.'),
+          ] %}
+          {% for icon, point in first_timer_points %}
+          <li style="display:flex;gap:var(--space-sm);align-items:flex-start;">
+            <span style="color:var(--accent);font-weight:700;font-size:0.9rem;margin-top:2px;flex-shrink:0;">{{ icon }}</span>
+            <span style="color:var(--text-secondary);font-size:0.95rem;">{{ point }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <a href="{{ url_for('public.explore') }}" class="btn btn-primary" id="firsttimer-cta">
+          FIND YOUR FIRST MEETUP →
+        </a>
+      </div>
+
+      <div class="scroll-fade-in" style="border-radius:var(--radius-xl);overflow:hidden;max-height:420px;">
+        <img src="{{ url_for('static', filename='images/first_timer.jpg') }}"
+             alt="A person being welcomed into a small group at an outdoor NXTUP experience"
+             style="width:100%;height:100%;object-fit:cover;" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION E — SURPRISE ME DA!
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_surprise_section %}
+<section class="section" style="background:var(--bg-secondary);" aria-labelledby="surprise-heading">
+  <div class="container" style="text-align:center;max-width:680px;margin:0 auto;">
+    <div class="section-heading__eyebrow scroll-fade-in">Can't Decide?</div>
+    <h2 id="surprise-heading" class="section-heading__title scroll-fade-in" style="margin-bottom:var(--space-sm);">
+      SURPRISE ME DA!
+    </h2>
+    <p style="color:var(--text-secondary);margin-bottom:var(--space-2xl);" class="scroll-fade-in">
+      Let {{ site.site_name }} pick a plan for you. Just show up.
+    </p>
+
+    <button id="surprise-btn" class="btn btn-primary btn-lg scroll-fade-in"
+            style="font-size:1.1rem;padding:1rem 2.5rem;"
+            aria-label="Pick a surprise experience for me">
+      🎲 PICK FOR ME
+    </button>
+
+    <!-- Loading state -->
+    <div id="surprise-loading" style="display:none;justify-content:center;margin-top:var(--space-xl);">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Result -->
+    <div id="surprise-result" style="display:none;margin-top:var(--space-xl);text-align:left;">
+      <!-- populated by JS -->
+    </div>
+
+    <button id="surprise-try-another" class="btn btn-secondary btn-sm mt-lg"
+            style="display:none;" aria-label="Pick another surprise experience">
+      Try Another ↺
+    </button>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION F — HOW NXTUP WORKS
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_howitworks_section %}
+<section class="section" id="how-it-works" aria-labelledby="howit-heading">
+  <div class="container">
+    <div class="section-heading text-center scroll-fade-in" style="max-width:520px;margin:0 auto var(--space-2xl);">
+      <div class="section-heading__eyebrow">Simple Process</div>
+      <h2 id="howit-heading" class="section-heading__title">THREE STEPS.<br>ONE NEW STORY.</h2>
+    </div>
+
+    <div class="steps-grid grid scroll-fade-in">
+      {% set steps = [
+        ('01', 'CHOOSE', 'Find an experience that matches your interests, budget, and schedule.', '🎯'),
+        ('02', 'JOIN', 'Check the details and reserve your place in minutes.', '✅'),
+        ('03', 'SHOW UP', 'Meet the group, enjoy the experience, and make the day your own.', '✨'),
+      ] %}
+      {% for num, title, desc, icon in steps %}
+      <div class="card" style="padding:var(--space-xl);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:var(--space-lg);right:var(--space-lg);
+                    font-family:var(--font-heading);font-size:3.5rem;font-weight:800;
+                    color:var(--border);line-height:1;user-select:none;">{{ num }}</div>
+        <div style="font-size:2rem;margin-bottom:var(--space-md);">{{ icon }}</div>
+        <h3 style="font-family:var(--font-heading);font-size:1.2rem;font-weight:800;
+                   color:var(--accent);margin-bottom:var(--space-sm);letter-spacing:0.02em;">{{ title }}</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION G — OUR VIBE
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_vibe_section %}
+<section class="section" style="background:var(--bg-secondary);" aria-labelledby="vibe-heading">
+  <div class="container">
+    <div class="section-heading text-center scroll-fade-in" style="max-width:480px;margin:0 auto var(--space-2xl);">
+      <div class="section-heading__eyebrow">Why {{ site.site_name }}</div>
+      <h2 id="vibe-heading" class="section-heading__title">NOT JUST<br>ANOTHER EVENT.</h2>
+    </div>
+
+    <div class="vibe-grid grid scroll-fade-in">
+      {% set vibes = [
+        ('👥', 'REAL PEOPLE', 'Meet people outside your usual circle. Not curated profiles. Actual strangers.'),
+        ('🎭', 'SHARED EXPERIENCES', 'Do something together instead of relying on awkward introductions. The activity breaks the ice.'),
+        ('🛡️', 'THOUGHTFUL PLANNING', "Clear event details, responsible hosts, and a welcoming environment. No surprises you didn't sign up for."),
+      ] %}
+      {% for icon, title, desc in vibes %}
+      <div class="card" style="padding:var(--space-xl);">
+        <div style="font-size:2.2rem;margin-bottom:var(--space-md);">{{ icon }}</div>
+        <h3 style="font-family:var(--font-heading);font-size:1rem;font-weight:800;
+                   letter-spacing:0.04em;margin-bottom:var(--space-sm);">{{ title }}</h3>
+        <p style="color:var(--text-secondary);font-size:0.875rem;line-height:1.6;">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION H — COMMUNITY STORIES (preview)
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_stories_section %}
+<section class="section" aria-labelledby="stories-heading">
+  <div class="container">
+    <div class="section-heading scroll-fade-in" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md);">
+      <div>
+        <div class="section-heading__eyebrow">Community</div>
+        <h2 id="stories-heading" class="section-heading__title">STORIES FROM THE<br>OTHER SIDE OF STRANGERS.</h2>
+      </div>
+      <a href="{{ url_for('public.reviews') }}" class="btn btn-ghost desktop-only">ALL STORIES →</a>
+    </div>
+
+    {% if reviews %}
+      <div class="reviews-grid grid scroll-fade-in">
+        {% for review in reviews %}
+        <div class="card" style="padding:var(--space-xl);">
+          {% if review.is_sample %}
+            <div class="sample-banner">⚠ Sample Story — Replace with real community stories as they come in</div>
+          {% endif %}
+          <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);">
+            <div style="width:44px;height:44px;background:var(--accent-dim);border:1.5px solid {{ site.accent_border }};
+                        border-radius:50%;display:flex;align-items:center;justify-content:center;
+                        font-family:var(--font-heading);font-weight:800;color:var(--accent);font-size:1.1rem;flex-shrink:0;">
+              {{ review.reviewer_initial or review.reviewer_name[0] }}
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;">{{ review.reviewer_name }}</div>
+              {% if review.experience_type %}
+                <div style="font-size:0.75rem;color:var(--text-muted);">{{ review.experience_type }}</div>
+              {% endif %}
+            </div>
+            {% if review.rating %}
+              <div class="stars" style="margin-left:auto;font-size:0.85rem;">
+                {{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}
+              </div>
+            {% endif %}
+          </div>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;font-style:italic;">
+            "{{ review.story }}"
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="text-center mt-xl scroll-fade-in">
+        <a href="{{ url_for('public.reviews') }}" class="btn btn-secondary">READ ALL STORIES →</a>
+      </div>
+    {% else %}
+      <div class="empty-state scroll-fade-in">
+        <div class="empty-state__icon">📖</div>
+        <div class="empty-state__title">Stories coming soon</div>
+        <p>Be among the first to share yours after attending an experience.</p>
+        <a href="{{ url_for('public.reviews') }}" class="btn btn-ghost mt-lg">Share Your Story →</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION I — SAFETY & TRUST
+════════════════════════════════════════════════════════════════════ -->
+{% if site.show_safety_section %}
+<section class="section" style="background:var(--bg-secondary);" aria-labelledby="safety-heading">
+  <div class="container" style="max-width:800px;margin:0 auto;">
+    <div class="section-heading text-center scroll-fade-in">
+      <div class="section-heading__eyebrow">Your Safety Matters</div>
+      <h2 id="safety-heading" class="section-heading__title">GOOD VIBES.<br>CLEAR RULES.</h2>
+      <p class="section-heading__sub" style="margin:0 auto;">
+        Every {{ site.site_name }} experience has a host, clear guidelines, and a safe way to report concerns.
+      </p>
+    </div>
+    <div class="grid trust-links-grid scroll-fade-in">
+      {% set trust_links = [
+        (url_for('public.community_guidelines'), '📋 Community Guidelines'),
+        (url_for('public.community_guidelines'), '🛡️ Safety Information'),
+        (url_for('public.cancellation_policy'), '↩ Cancellation Policy'),
+        (url_for('public.privacy_policy'), '🔒 Privacy Policy'),
+        (url_for('public.about'), 'ℹ️ About ' + site.site_name),
+        (url_for('public.contact') + '?category=safety', '🚨 Report an Issue'),
+      ] %}
+      {% for href, label in trust_links %}
+      <a href="{{ href }}" class="card" style="padding:var(--space-md);display:flex;align-items:center;gap:var(--space-sm);font-size:0.875rem;font-weight:500;">
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION J — FINAL CTA
+════════════════════════════════════════════════════════════════════ -->
+<section class="section" aria-labelledby="final-cta-heading"
+         style="position:relative;overflow:hidden;background:var(--bg-main);text-align:center;">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, {{ site.accent_dim }} 0%, transparent 70%);pointer-events:none;"></div>
+  <div class="container" style="position:relative;max-width:600px;margin:0 auto;">
+    <h2 id="final-cta-heading" class="display-lg scroll-fade-in" style="margin-bottom:var(--space-md);">
+      STOP WAITING FOR<br>PLANS TO HAPPEN.
+    </h2>
+    <p style="color:var(--text-secondary);font-size:1rem;margin-bottom:var(--space-2xl);" class="scroll-fade-in">
+      Your next story could start this weekend.
+    </p>
+    <a href="{{ url_for('public.explore') }}" class="btn btn-primary btn-lg scroll-fade-in" id="final-cta-btn"
+       style="font-size:1.05rem;padding:1rem 2.5rem;">
+      EXPLORE {{ site.site_name }} →
+    </a>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}About NXTUP — We Believe Great Stories Start Unexpectedly{% endblock %}
+{% block meta_description %}Learn about NXTUP — Vellore's social experience platform that organises stranger meetups, local explorations, and group trips.{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section style="padding:var(--space-4xl) 0 var(--space-3xl);position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%, rgba(200,255,0,0.04) 0%, transparent 60%);pointer-events:none;"></div>
+  <div class="container" style="max-width:860px;margin:0 auto;position:relative;">
+    <div class="section-heading__eyebrow scroll-fade-in">Our Story</div>
+    <h1 class="display-lg scroll-fade-in" style="margin-bottom:var(--space-xl);">
+      WE BELIEVE<br>GREAT STORIES<br>START <span style="color:var(--accent);">UNEXPECTEDLY.</span>
+    </h1>
+
+    <div style="background:var(--bg-secondary);border:1px solid var(--border);border-left:3px solid var(--accent);
+                border-radius:var(--radius-lg);padding:var(--space-xl);margin-bottom:var(--space-2xl);"
+         class="scroll-fade-in">
+      <p style="color:var(--text-secondary);line-height:1.9;font-size:1rem;">
+        NXTUP is a social-experience community built around a simple idea: <strong style="color:var(--text-primary);">you shouldn't have to wait for your existing friend group to be available</strong> before you do something interesting.
+      </p>
+      <p style="color:var(--text-secondary);line-height:1.9;font-size:1rem;margin-top:var(--space-md);">
+        We organise small meetups, shared activities, and local trips that give people an opportunity to meet new faces, explore new places, and step outside their everyday routine.
+      </p>
+      <p style="color:var(--accent);font-family:var(--font-heading);font-size:1.1rem;font-weight:700;margin-top:var(--space-lg);">
+        Come alone. Bring your curiosity. Discover what's next.
+      </p>
+    </div>
+
+    <!-- Image -->
+    <div style="border-radius:var(--radius-xl);overflow:hidden;margin-bottom:var(--space-3xl);" class="scroll-fade-in">
+      <img src="{{ url_for('static', filename='images/vellore_group.jpg') }}"
+           alt="A group of young people enjoying an experience together in Vellore"
+           style="width:100%;aspect-ratio:16/9;object-fit:cover;" loading="lazy">
+    </div>
+
+    <!-- Mission -->
+    <section aria-labelledby="mission-heading" class="scroll-fade-in" style="margin-bottom:var(--space-3xl);">
+      <h2 id="mission-heading" style="font-family:var(--font-heading);font-size:1.5rem;font-weight:800;
+          letter-spacing:-0.02em;margin-bottom:var(--space-xl);">What We Do</h2>
+      <div class="grid" style="grid-template-columns:1fr;gap:var(--space-md);">
+        {% set mission_items = [
+          ('🤝', 'Stranger Meetups', 'Small, structured gatherings of 6–15 people who don\'t know each other yet. Hosted events that create the conditions for real connection.'),
+          ('🗺️', 'Local Explorations', 'Walks, visits, and discoveries in Vellore and nearby areas — things most people haven\'t tried in their own city.'),
+          ('🚌', 'Group Trips', 'Day trips and weekend adventures to places within reach of Vellore. Planned, comfortable, and shared.'),
+          ('⚡', 'Social Experiences', 'Games, challenges, creative activities, and unexpected social formats that break ordinary routines.'),
+        ] %}
+        {% for icon, title, desc in mission_items %}
+        <div class="card" style="padding:var(--space-xl);display:flex;gap:var(--space-lg);align-items:flex-start;">
+          <div style="font-size:1.8rem;flex-shrink:0;">{{ icon }}</div>
+          <div>
+            <h3 style="font-family:var(--font-heading);font-size:1rem;font-weight:700;margin-bottom:var(--space-sm);">{{ title }}</h3>
+            <p style="color:var(--text-secondary);font-size:0.875rem;line-height:1.6;">{{ desc }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Principles -->
+    <section aria-labelledby="principles-heading" class="scroll-fade-in" style="margin-bottom:var(--space-3xl);">
+      <h2 id="principles-heading" style="font-family:var(--font-heading);font-size:1.5rem;font-weight:800;
+          letter-spacing:-0.02em;margin-bottom:var(--space-xl);">How We Operate</h2>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+        {% set principles = [
+          ('Honest event information', 'Every experience listing tells you exactly what\'s happening, what\'s included, and what to expect. No vague promises.'),
+          ('Small groups only', 'We keep group sizes small so people can actually connect — not just be in the same room.'),
+          ('Hosts at every event', 'Every NXTUP experience has a host who explains the format, keeps energy positive, and ensures everyone is comfortable.'),
+          ('Community guidelines enforced', 'We take respectful behaviour seriously. Guidelines apply to everyone. Violations are addressed.'),
+          ('No fake reviews or fabricated data', 'What you read on this site is either clearly labelled sample content or real information from real experiences.'),
+        ] %}
+        {% for title, desc in principles %}
+        <div style="display:flex;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--accent);font-weight:700;flex-shrink:0;margin-top:2px;">✓</span>
+          <div>
+            <strong style="display:block;font-size:0.9rem;margin-bottom:4px;">{{ title }}</strong>
+            <p style="color:var(--text-secondary);font-size:0.85rem;line-height:1.6;">{{ desc }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Contact info -->
+    <section class="scroll-fade-in">
+      <div class="card" style="padding:var(--space-xl);text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:var(--space-sm);">💬</div>
+        <h2 style="font-family:var(--font-heading);font-size:1.2rem;font-weight:800;margin-bottom:var(--space-sm);">Get in Touch</h2>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:var(--space-xl);">
+          Questions, ideas, or want to know about upcoming experiences? We're approachable.
+        </p>
+        <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap;">
+          <a href="{{ url_for('public.contact') }}" class="btn btn-primary">Contact Us</a>
+          <a href="{{ url_for('public.explore') }}" class="btn btn-secondary">See Experiences</a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}

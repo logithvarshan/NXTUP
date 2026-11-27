@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed — {{ event.title }} | NXTUP{% endblock %}
+{% block content %}
+<div style="min-height:70dvh;display:flex;align-items:center;justify-content:center;padding:var(--space-2xl);">
+  <div style="max-width:500px;width:100%;text-align:center;">
+
+    <div style="font-size:3.5rem;margin-bottom:var(--space-lg);">🎉</div>
+
+    <div class="badge badge-available" style="margin:0 auto var(--space-lg);">Booking Received</div>
+
+    <h1 style="font-family:var(--font-heading);font-size:clamp(1.5rem,5vw,2rem);font-weight:800;
+               letter-spacing:-0.03em;margin-bottom:var(--space-md);">
+      You're in, {{ booking.name.split()[0] }}!
+    </h1>
+
+    <p style="color:var(--text-secondary);margin-bottom:var(--space-2xl);line-height:1.7;">
+      Your registration for <strong style="color:var(--text-primary);">{{ event.title }}</strong> has been received.
+      We'll send a confirmation to <strong style="color:var(--text-primary);">{{ booking.email }}</strong> once your place is confirmed.
+    </p>
+
+    <div class="card" style="padding:var(--space-xl);margin-bottom:var(--space-xl);text-align:left;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+        {% set details = [
+          ('Booking Ref', booking.reference),
+          ('Status', booking.status_label),
+          ('Event', event.title),
+          ('Date', event.start_datetime | date_display),
+          ('Location', event.location_name or event.city),
+          ('Places', booking.places|string),
+        ] %}
+        {% for label, value in details %}
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:3px;">{{ label }}</div>
+          <div style="font-weight:600;font-size:0.9rem;{% if label == 'Booking Ref' %}color:var(--accent);font-family:var(--font-heading);font-size:1rem;{% endif %}">{{ value }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="margin-bottom:var(--space-xl);text-align:left;font-size:0.85rem;">
+      <strong>💡 What happens next?</strong><br>
+      We'll review your registration and send a confirmation email within 24 hours. Save your booking reference <strong>{{ booking.reference }}</strong> — you'll need it to look up your booking.
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+      <a href="{{ url_for('public.explore') }}" class="btn btn-primary">Explore More Experiences →</a>
+      <a href="{{ url_for('public.my_plans') }}" class="btn btn-secondary">Look Up My Booking</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

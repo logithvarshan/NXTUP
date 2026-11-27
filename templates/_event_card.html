@@ -1,0 +1,53 @@
+{% set avail = event.available_places %}
+{% set cat_info = category_map.get(event.category) %}
+<article class="event-card" aria-label="{{ event.title }}">
+  {% if event.image_filename %}
+    <img class="event-card__image"
+         src="{{ url_for('static', filename='images/' + event.image_filename) }}"
+         alt="{{ event.title }}"
+         loading="lazy">
+  {% else %}
+    <div class="event-card__image-placeholder" aria-hidden="true">
+      {{ event.category | category_icon }}
+    </div>
+  {% endif %}
+
+  <div class="event-card__body">
+    <div class="event-card__meta">
+      <span class="badge badge-{{ event.category }}"
+            {% if cat_info %}style="background:{{ cat_info.color_dim }};color:{{ cat_info.color }};"{% endif %}>
+        {{ event.category | category_icon }} {{ event.category | category_label }}
+      </span>
+      {% if event.is_trip %}
+        <span class="badge badge-trip">🚌 Trip</span>
+      {% endif %}
+      {% if avail == 0 %}
+        <span class="badge badge-sold-out">Sold Out</span>
+      {% elif avail <= 3 %}
+        <span class="badge badge-few-left">{{ avail }} left</span>
+      {% endif %}
+    </div>
+
+    <h3 class="event-card__title">{{ event.title }}</h3>
+    <p class="event-card__desc">{{ event.short_description }}</p>
+
+    <div class="event-card__details">
+      <span class="event-card__detail">📅 {{ event.start_datetime | date_display }}</span>
+      <span class="event-card__detail">⏱ {{ event.duration_display }}</span>
+      <span class="event-card__detail">📍 {{ event.city }}</span>
+      <span class="event-card__detail">👥 up to {{ event.capacity }}</span>
+    </div>
+
+    <div class="event-card__footer">
+      <div>
+        <div class="event-card__price">{{ event.price | rupees }}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);">per person</div>
+      </div>
+      <a href="{{ url_for('public.experience_detail', slug=event.slug) }}"
+         class="btn btn-primary btn-sm"
+         aria-label="View plan: {{ event.title }}">
+        {% if event.is_sold_out %}SOLD OUT{% else %}VIEW PLAN →{% endif %}
+      </a>
+    </div>
+  </div>
+</article>
